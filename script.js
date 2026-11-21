@@ -368,4 +368,4 @@ navLinks.forEach(link => {
 
 attachHomeEvents();
 
-});i
+});
