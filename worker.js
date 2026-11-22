@@ -85,7 +85,7 @@ export default {
     
       return Response.json({
         success: true,
-        reply: result.response || "Please try again."
+        reply: result.choices?.[0]?.message?.content || "Please try again."
       }, { headers });
 
     } catch (error) {
