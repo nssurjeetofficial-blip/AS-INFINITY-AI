@@ -486,53 +486,95 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // RENDER MESSAGES
-    function renderMessages() {
+    // PERSONAL NICKNAME MEMORY
+function saveNickname(type) {
+    const label = type === "user"
+        ? "User nickname: "
+        : "AI nickname: ";
 
-        const box = document.querySelector("#chatMessages");
-        const chat = getActiveChat();
+    const nickname = prompt(
+        type === "user"
+            ? "What nickname should AI call you?"
+            : "What nickname should AI remember for itself?"
+    );
 
-        if (!box || !chat) return;
+    if (!nickname || !nickname.trim()) return;
 
-        if (!chat.messages || !chat.messages.length) {
-            box.innerHTML = "";
+    const value = label + nickname.trim();
+
+    const existing = memories.findIndex(item =>
+        item.startsWith(label)
+    );
+
+    if (existing !== -1) {
+        memories[existing] = value;
+    } else {
+        if (memories.length >= 12) {
+            alert("Memory limit reached. Delete an old memory first.");
             return;
         }
 
-        box.innerHTML = chat.messages.map(message => {
+        memories.push(value);
+    }
 
-            const isUser = message.role === "user";
+    saveMemories();
+    alert("Nickname saved successfully! ♡");
+}
+    // RENDER MESSAGES
+function renderMessages() {
 
-            return `
-                <div class="message-row ${isUser ? "user-row" : "assistant-row"}">
+    const box = document.querySelector("#chatMessages");
+    const chat = getActiveChat();
 
-                    ${isUser ? "" : `<div class="message-avatar">∞</div>`}
+    if (!box || !chat) return;
 
-                    <div class="message-content">
-                        ${escapeHTML(message.content).replace(/\n/g, "<br>")}
-                    </div>
+    if (!chat.messages || !chat.messages.length) {
+        box.innerHTML = "";
+        return;
+    }
 
+    box.innerHTML = chat.messages.map((message, index) => {
+
+        const isUser = message.role === "user";
+
+        return `
+            <div class="message-row ${isUser ? "user-row" : "assistant-row"}">
+
+                ${isUser ? "" : `<div class="message-avatar">∞</div>`}
+
+                <div class="message-content">
+                    ${escapeHTML(message.content).replace(/\n/g, "<br>")}
+
+                    ${!isUser ? `
+                        <div style="display:flex;gap:7px;flex-wrap:wrap;margin-top:10px;">
+                            <button data-save-user-nickname
+                                style="background:#30202d;color:#ff70b8;border:1px solid #ff70b8;border-radius:8px;padding:7px;font-size:11px;">
+                                ♡ Save My Nickname
+                            </button>
+
+                            <button data-save-ai-nickname
+                                style="background:#30202d;color:#ff70b8;border:1px solid #ff70b8;border-radius:8px;padding:7px;font-size:11px;">
+                                ♡ Save AI Nickname
+                            </button>
+                        </div>
+                    ` : ""}
                 </div>
-            `;
 
-        }).join("");
+            </div>
+        `;
 
-        box.scrollTop = box.scrollHeight;
-    }
+    }).join("");
 
-    // HOME PAGE
-    function showHome() {
+    box.querySelectorAll("[data-save-user-nickname]").forEach(button => {
+        button.onclick = () => saveNickname("user");
+    });
 
-        if (!main) return;
+    box.querySelectorAll("[data-save-ai-nickname]").forEach(button => {
+        button.onclick = () => saveNickname("ai");
+    });
 
-        activeChatId = null;
-        main.innerHTML = homeContent;
-
-        attachHomeEvents();
-        renderSidebarHistory();
-        closeMobileSidebar();
-    }
-
+    box.scrollTop = box.scrollHeight;
+}
     // HOME EVENTS
     function attachHomeEvents() {
 
