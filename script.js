@@ -424,7 +424,35 @@ html, body {
         margin-bottom: 8px;
     }
 }
+/* KEEP CHAT HEADER AND COMPOSER VISIBLE */
 
+.ai-chat-page {
+    position: relative !important;
+    height: 100dvh !important;
+    overflow: hidden !important;
+}
+
+.chat-topbar {
+    position: sticky !important;
+    top: 0 !important;
+    flex-shrink: 0 !important;
+    z-index: 100 !important;
+    background: #080808 !important;
+}
+
+#chatMessages {
+    flex: 1 1 0 !important;
+    min-height: 0 !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+}
+
+.chat-composer {
+    position: relative !important;
+    flex-shrink: 0 !important;
+    z-index: 100 !important;
+    background: #141112 !important;
+}
 `;
 
     document.head.appendChild(chatStyles);
