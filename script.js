@@ -285,7 +285,53 @@ document.addEventListener("DOMContentLoaded", () => {
     text-align: left !important;
 }
 
-    `;
+   .chat-topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 5px;
+    border-bottom: 1px solid #29202a;
+    margin-bottom: 12px;
+}
+
+.back-home,
+.chat-menu-button {
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    background: #191319;
+    color: #ff83bd;
+    border: 1px solid #392536;
+    font-size: 23px;
+    cursor: pointer;
+}
+
+.chat-brand {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    color: white;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.brand-symbol {
+    font-size: 27px;
+    color: #ff3d9a;
+}
+
+.online-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #ff3d9a;
+    box-shadow: 0 0 10px #ff3d9a;
+}
+
+.chat-menu-button {
+    font-size: 25px;
+}
+`;
 
     document.head.appendChild(chatStyles);
 
@@ -427,15 +473,21 @@ document.addEventListener("DOMContentLoaded", () => {
 
                 <div class="chat-topbar">
 
-                    <button class="back-home" id="backHomeBtn">
-                        ← Home
-                    </button>
+    <button class="back-home" id="backHomeBtn" title="Home">
+        ⌂
+    </button>
 
-                    <button class="chat-new-button" id="newChatBtn">
-                        + New Chat
-                    </button>
+    <div class="chat-brand">
+        <span class="brand-symbol">∞</span>
+        <span>AS INFINITY AI</span>
+        <span class="online-dot"></span>
+    </div>
 
-                </div>
+    <button class="chat-menu-button" id="chatMenuBtn" title="New Chat">
+        ⋯
+    </button>
+
+</div>
 
                 <div class="chat-heading">
 
