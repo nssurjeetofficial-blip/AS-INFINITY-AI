@@ -591,57 +591,156 @@ function renderMessages() {
                 createChat();
 
                 setTimeout(() => {
+// PERSONAL NICKNAME MEMORY
+function saveNickname(type) {
+    const label = type === "user"
+        ? "User nickname: "
+        : "AI nickname: ";
 
-                    const input = document.querySelector("#aiMessageInput");
-                    const button = document.querySelector("#aiSendButton");
+    const nickname = prompt(
+        type === "user"
+            ? "What nickname should AI call you?"
+            : "What nickname should AI remember for itself?"
+    );
 
-                    if (input && button) {
-                        input.value = message;
-                        button.click();
-                    }
+    if (!nickname || !nickname.trim()) return;
 
-                }, 100);
+    const value = label + nickname.trim();
 
-            });
+    const existing = memories.findIndex(item =>
+        item.startsWith(label)
+    );
 
-            chatInput.addEventListener("keydown", event => {
-
-                if (event.key === "Enter") {
-                    event.preventDefault();
-                    chatButton.click();
-                }
-
-            });
+    if (existing !== -1) {
+        memories[existing] = value;
+    } else {
+        if (memories.length >= 12) {
+            alert("Memory limit reached. Delete an old memory first.");
+            return;
         }
 
-        document.querySelectorAll(".feature-card").forEach(card => {
+        memories.push(value);
+    }
 
-            card.addEventListener("click", () => {
+    saveMemories();
+    alert("Nickname saved successfully! ♡");
+}
 
-                const title = card.querySelector("h3")?.textContent || "Feature";
 
-                alert(title + " is coming soon to AS INFINITY AI.");
+// RENDER MESSAGES
+function renderMessages() {
+    const box = document.querySelector("#chatMessages");
+    const chat = getActiveChat();
 
-            });
+    if (!box || !chat) return;
 
+    if (!chat.messages || !chat.messages.length) {
+        box.innerHTML = "";
+        return;
+    }
+
+    box.innerHTML = chat.messages.map(message => {
+        const isUser = message.role === "user";
+
+        return `
+            <div class="message-row ${isUser ? "user-row" : "assistant-row"}">
+                ${isUser ? "" : `<div class="message-avatar">∞</div>`}
+
+                <div class="message-content">
+                    ${escapeHTML(message.content).replace(/\n/g, "<br>")}
+
+                    ${!isUser ? `
+                        <div style="display:flex;gap:7px;flex-wrap:wrap;margin-top:10px;">
+                            <button data-save-user-nickname
+                                style="background:#30202d;color:#ff70b8;border:1px solid #ff70b8;border-radius:8px;padding:7px;font-size:11px;">
+                                ♡ Save My Nickname
+                            </button>
+
+                            <button data-save-ai-nickname
+                                style="background:#30202d;color:#ff70b8;border:1px solid #ff70b8;border-radius:8px;padding:7px;font-size:11px;">
+                                ♡ Save AI Nickname
+                            </button>
+                        </div>
+                    ` : ""}
+                </div>
+            </div>
+        `;
+    }).join("");
+
+    box.querySelectorAll("[data-save-user-nickname]").forEach(button => {
+        button.onclick = () => saveNickname("user");
+    });
+
+    box.querySelectorAll("[data-save-ai-nickname]").forEach(button => {
+        button.onclick = () => saveNickname("ai");
+    });
+
+    box.scrollTop = box.scrollHeight;
+}
+
+
+// HOME PAGE
+function showHome() {
+    if (!main) return;
+
+    activeChatId = null;
+    main.innerHTML = homeContent;
+
+    attachHomeEvents();
+    renderSidebarHistory();
+    closeMobileSidebar();
+}
+
+
+// HOME EVENTS
+function attachHomeEvents() {
+    const chatInput = document.querySelector(".chat-box input");
+    const chatButton = document.querySelector(".chat-box button");
+
+    if (chatInput && chatButton) {
+        chatButton.addEventListener("click", () => {
+            const message = chatInput.value.trim();
+            if (!message) return;
+
+            createChat();
+
+            setTimeout(() => {
+                const input = document.querySelector("#aiMessageInput");
+                const button = document.querySelector("#aiSendButton");
+
+                if (input && button) {
+                    input.value = message;
+                    button.click();
+                }
+            }, 100);
         });
 
-        document.querySelectorAll("nav a").forEach(link => {
-
-            link.addEventListener("click", event => {
-
-                const text = link.textContent.trim().toLowerCase();
-
-                if (text.includes("new chat") || text.includes("chat")) {
-                    event.preventDefault();
-                    createChat();
-                }
-
-            });
-
+        chatInput.addEventListener("keydown", event => {
+            if (event.key === "Enter") {
+                event.preventDefault();
+                chatButton.click();
+            }
         });
     }
 
+    document.querySelectorAll(".feature-card").forEach(card => {
+        card.addEventListener("click", () => {
+            const title = card.querySelector("h3")?.textContent || "Feature";
+            alert(title + " is coming soon to AS INFINITY AI.");
+        });
+    });
+
+    document.querySelectorAll("nav a").forEach(link => {
+        link.addEventListener("click", event => {
+            const text = link.textContent.trim().toLowerCase();
+
+            if (text.includes("new chat") || text.includes("chat")) {
+                event.preventDefault();
+                createChat();
+            }
+        });
+    });
+                }
     // MOBILE SIDEBAR
     function closeMobileSidebar() {
 
