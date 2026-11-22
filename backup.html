@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AS INFINITY AI Backup</title>
+</head>
+<body style="background:#080808;color:white;font-family:Arial;padding:25px">
+<h2>AS INFINITY AI</h2>
+<p>Chat & Memory Backup</p>
+<button id="backup">Download My Backup</button>
+<p id="status"></p>
+
+<script type="module">
+import { STORAGE_KEY, MEMORY_KEY } from "./js/config.js";
+
+document.getElementById("backup").onclick = () => {
+    try {
+        const chats = JSON.parse(
+            localStorage.getItem(STORAGE_KEY) || "[]"
+        );
+
+        const memories = JSON.parse(
+            localStorage.getItem(MEMORY_KEY) || "[]"
+        );
+
+        const backup = {
+            project: "AS INFINITY AI",
+            date: new Date().toISOString(),
+            chats,
+            memories
+        };
+
+        const blob = new Blob(
+            [JSON.stringify(backup, null, 2)],
+            { type: "application/json" }
+        );
+
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+
+        link.href = url;
+        link.download = "AS-INFINITY-AI-BACKUP.json";
+        link.click();
+
+        URL.revokeObjectURL(url);
+
+        document.getElementById("status").textContent =
+            `Backup downloaded: ${chats.length} chats, ${memories.length} memories.`;
+
+    } catch (error) {
+        document.getElementById("status").textContent =
+            "Backup failed: " + error.message;
+    }
+};
+</script>
+</body>
+</html>
