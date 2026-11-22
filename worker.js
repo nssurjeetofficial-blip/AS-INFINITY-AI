@@ -81,7 +81,8 @@ export default {
           }
         }
       );
-
+  console.log("AS INFINITY AI RESULT:", JSON.stringify(result));
+    
       return Response.json({
         success: true,
         reply: result.response || "Please try again."
