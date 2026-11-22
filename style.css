@@ -548,3 +548,14 @@ footer {
         padding: 14px 11px;
     }
 }
+/* SIDEBAR MENU SPACING FIX */
+
+.sidebar nav {
+    margin-top: 18px;
+    gap: 12px;
+}
+
+.sidebar nav a {
+    display: block;
+    margin-bottom: 4px;
+}
