@@ -622,21 +622,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // INITIALIZE
     function initializeApp() {
-        renderSidebarHistory();
+    renderSidebarHistory();
+    activeChatId = null;
+    showHome();
+}
 
-        if (chats.length > 0) {
-            const latestChat = [...chats].sort(
-                (a, b) => (b.updated || 0) - (a.updated || 0)
-            )[0];
-
-            activeChatId = latestChat.id;
-            openChat();
-        } else {
-            showHome();
-        }
-    }
-
-    initializeApp();
+initializeApp();
     // RESPONSIVE SIDEBAR
     window.addEventListener("resize", () => {
         if (window.innerWidth > 768) {
