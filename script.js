@@ -14,6 +14,28 @@ document.addEventListener("DOMContentLoaded", () => {
         "https://as-infinity-ai.nssurjeetofficial.workers.dev";
 
     const STORAGE_KEY = "as_infinity_ai_chats";
+    // ======================================
+// AI MEMORY STORAGE
+// ======================================
+
+const MEMORY_KEY = "as_infinity_ai_memories";
+
+function loadMemories() {
+    try {
+        const saved = localStorage.getItem(MEMORY_KEY);
+        return saved ? JSON.parse(saved) : [];
+    } catch (error) {
+        console.error("Memory loading error:", error);
+        return [];
+    }
+}
+
+function saveMemories(memories) {
+    localStorage.setItem(
+        MEMORY_KEY,
+        JSON.stringify(memories)
+    );
+}
 
     // ======================================
     // ELEMENTS
