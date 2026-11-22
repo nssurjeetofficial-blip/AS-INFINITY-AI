@@ -420,9 +420,10 @@ document.addEventListener("DOMContentLoaded", () => {
         document.body.appendChild(overlay);
     }
 
-    memoryButton.addEventListener(
-        "click",
-        openMemoryManager
+    memoryButton.onclick = function () {
+    console.log("Memory button clicked");
+    openMemoryManager();
+};
     );
 
     // STARTUP
