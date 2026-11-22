@@ -1,265 +1,252 @@
-<!DOCTYPE html>
-<html lang="en">
+<!DOCTYPE html><html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>AS INFINITY AI — Intelligence Without Limits</title>
+<meta name="theme-color" content="#080808">
+<meta name="description" content="Your personal AI companion to chat, learn, create and grow.">
 
-    <title>AS INFINITY AI — Intelligence Without Limits</title>
+<link rel="stylesheet" href="style.css?v=5">
 
-    <meta name="theme-color" content="#080808">
-    <meta name="description" content="Your personal AI companion to chat, learn, create and grow.">
-
-    <link rel="stylesheet" href="style.css?v=4">
-</head>
-
-<body>
-
-<!-- Background Effects -->
-<div class="background-effects">
+</head><body><div class="background-effects">
     <div class="pink-glow glow-one"></div>
     <div class="pink-glow glow-two"></div>
     <div class="pink-glow glow-three"></div>
     <div class="background-grid"></div>
-</div>
+</div><div class="app"><!-- SIDEBAR -->
+<aside class="sidebar" id="sidebar">
 
-<div class="app">
+    <div class="brand">
+        <div class="logo">∞</div>
 
-    <!-- Sidebar -->
-    <aside class="sidebar">
-
-        <div class="brand">
-            <div class="logo">∞</div>
+        <div class="brand-text">
             <h2>AS INFINITY AI</h2>
             <p>Intelligence Without Limits.</p>
         </div>
+    </div>
 
-        <div class="sidebar-label">MAIN MENU</div>
+    <div class="sidebar-label">WORKSPACE</div>
 
-        <nav>
-            <a class="active" href="#">
-                <span class="nav-icon">⌂</span>
-                <span>Home</span>
-            </a>
+    <nav class="sidebar-nav">
 
-            <a href="#">
-                <span class="nav-icon">◉</span>
-                <span>AI Chat</span>
-            </a>
+        <a class="active" href="#" title="Home">
+            <span class="nav-icon">⌂</span>
+            <span class="nav-text">Home</span>
+        </a>
 
-            <a href="#">
-                <span class="nav-icon">▣</span>
-                <span>Master Guide</span>
-            </a>
+        <a href="#" title="AI Chat">
+            <span class="nav-icon">◉</span>
+            <span class="nav-text">AI Chat</span>
+        </a>
 
-            <a href="#">
-                <span class="nav-icon">⌘</span>
-                <span>Coding Assistant</span>
-            </a>
+        <a href="#" title="Master Guide">
+            <span class="nav-icon">▣</span>
+            <span class="nav-text">Master Guide</span>
+        </a>
 
-            <a href="#">
-                <span class="nav-icon">♫</span>
-                <span>Voice Assistant</span>
-            </a>
+        <a href="#" title="Coding Assistant">
+            <span class="nav-icon">⌘</span>
+            <span class="nav-text">Coding Assistant</span>
+        </a>
 
-            <a href="#">
-                <span class="nav-icon">⚙</span>
-                <span>Settings</span>
-            </a>
-        </nav>
+        <a href="#" title="Voice Assistant">
+            <span class="nav-icon">♫</span>
+            <span class="nav-text">Voice Assistant</span>
+        </a>
 
-        <div class="sidebar-bottom">
+        <div class="sidebar-divider"></div>
 
-            <div class="profile">
-                <div class="avatar">S</div>
+        <a href="#" title="Settings">
+            <span class="nav-icon">⚙</span>
+            <span class="nav-text">Settings</span>
+        </a>
 
-                <div class="profile-info">
-                    <h4>Welcome User</h4>
-                    <p>Personal Account</p>
-                </div>
+    </nav>
 
-                <span class="profile-menu">•••</span>
+    <div class="sidebar-bottom">
+
+        <div class="profile">
+            <div class="avatar">S</div>
+
+            <div class="profile-info">
+                <h4>Welcome User</h4>
+                <p>Personal Account</p>
             </div>
 
+            <span class="profile-menu">•••</span>
         </div>
 
-    </aside>
+    </div>
 
+</aside>
 
-    <!-- Main Content -->
-    <main class="main">
+<!-- MAIN CONTENT -->
+<main class="main">
 
-        <!-- Topbar -->
-        <header class="topbar">
+    <!-- HEADER -->
+    <header class="topbar">
+
+        <div class="header-left">
+
+            <button
+                class="sidebar-toggle"
+                id="sidebarToggle"
+                type="button"
+                aria-label="Toggle sidebar"
+                aria-expanded="true"
+                aria-controls="sidebar"
+            >
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
 
             <div class="search">
                 <span>⌕</span>
                 <input
                     type="text"
                     placeholder="Search anything..."
+                    aria-label="Search"
                 >
+                <span class="search-shortcut">⌘ K</span>
             </div>
 
-            <div class="topbar-right">
-                <div class="status-badge">
-                    <span class="status-dot"></span>
-                    AI ONLINE
-                </div>
-
-                <button class="theme-btn" aria-label="Toggle theme">
-                    ☼
-                </button>
-            </div>
-
-        </header>
-
-
-        <!-- Hero Section -->
-        <section class="hero">
-
-            <div class="hero-glow"></div>
-
-            <div class="hero-logo">
-                <span>∞</span>
-            </div>
-
-            <div class="hero-tag">
-                ✦ YOUR PERSONAL AI COMPANION
-            </div>
-
-            <h1>
-                AS <span>INFINITY</span> AI
-            </h1>
-
-            <h3>
-                Intelligence Without Limits.
-            </h3>
-
-            <p>
-                Your personal AI companion to chat, learn,
-                create and grow.
-            </p>
-
-            <div class="welcome">
-                <span class="welcome-sparkle">✦</span>
-                Welcome to your AI world.
-                <span class="welcome-sparkle">✦</span>
-            </div>
-
-        </section>
-
-
-        <!-- AI Input -->
-        <section class="chat-box">
-
-            <div class="chat-input-icon">∞</div>
-
-            <input
-                type="text"
-                placeholder="Ask anything to AS INFINITY AI..."
-                autocomplete="off"
-            >
-
-            <button type="button" aria-label="Send message">
-                ➤
-            </button>
-
-        </section>
-
-
-        <!-- Feature Heading -->
-        <div class="section-heading">
-            <div>
-                <span class="section-subtitle">EXPLORE YOUR AI WORLD</span>
-                <h2>What would you like to do?</h2>
-            </div>
-
-            <span class="section-decoration">✦</span>
         </div>
 
+        <div class="topbar-right">
 
-        <!-- Features -->
-        <section class="features">
-
-            <div class="feature-card">
-                <div class="icon">◉</div>
-
-                <div class="feature-number">01</div>
-
-                <h3>AI Chat</h3>
-
-                <p>
-                    Talk with your personal AI companion
-                    and explore endless possibilities.
-                </p>
-
-                <span>Explore →</span>
+            <div class="status-badge">
+                <span class="status-dot"></span>
+                AI ONLINE
             </div>
 
+            <button class="theme-btn" type="button" aria-label="Toggle theme">
+                ☼
+            </button>
 
-            <div class="feature-card">
-                <div class="icon">▣</div>
+        </div>
 
-                <div class="feature-number">02</div>
+    </header>
 
-                <h3>Master Guide</h3>
+    <!-- ORIGINAL HERO SECTION -->
+    <section class="hero">
 
-                <p>
-                    Learn new things and grow your knowledge
-                    from beginner to advanced.
-                </p>
+        <div class="hero-glow"></div>
 
-                <span>Explore →</span>
-            </div>
+        <div class="hero-logo">
+            <span>∞</span>
+        </div>
 
+        <div class="hero-tag">
+            ✦ YOUR PERSONAL AI COMPANION
+        </div>
 
-            <div class="feature-card">
-                <div class="icon">&lt;/&gt;</div>
+        <h1>
+            AS <span>INFINITY</span> AI
+        </h1>
 
-                <div class="feature-number">03</div>
+        <h3>
+            Intelligence Without Limits.
+        </h3>
 
-                <h3>Coding Assistant</h3>
+        <p>
+            Your personal AI companion to chat, learn,
+            create and grow.
+        </p>
 
-                <p>
-                    Write, understand, debug and improve
-                    your programming skills.
-                </p>
+        <div class="welcome">
+            <span class="welcome-sparkle">✦</span>
+            Welcome to your AI world.
+            <span class="welcome-sparkle">✦</span>
+        </div>
 
-                <span>Explore →</span>
-            </div>
+    </section>
 
+    <!-- ORIGINAL CHAT BOX -->
+    <section class="chat-box">
 
-            <div class="feature-card">
-                <div class="icon">♫</div>
+        <div class="chat-input-icon">∞</div>
 
-                <div class="feature-number">04</div>
+        <input
+            type="text"
+            placeholder="Ask anything to AS INFINITY AI..."
+            autocomplete="off"
+        >
 
-                <h3>Voice Assistant</h3>
+        <button type="button" aria-label="Send message">
+            ➤
+        </button>
 
-                <p>
-                    Experience a more natural way
-                    to interact with your AI.
-                </p>
+    </section>
 
-                <span>Explore →</span>
-            </div>
+    <!-- ORIGINAL FEATURE HEADING -->
+    <div class="section-heading">
+        <div>
+            <span class="section-subtitle">EXPLORE YOUR AI WORLD</span>
+            <h2>What would you like to do?</h2>
+        </div>
 
-        </section>
+        <span class="section-decoration">✦</span>
+    </div>
 
+    <!-- ORIGINAL FEATURE CARDS -->
+    <section class="features">
 
-        <!-- Footer -->
-        <footer>
-            <span>∞ AS INFINITY AI</span>
-            <p>Think • Learn • Create • Grow</p>
-            <span class="footer-tagline">
-                Intelligence Without Limits.
-            </span>
-        </footer>
+        <div class="feature-card">
+            <div class="icon">◉</div>
+            <div class="feature-number">01</div>
+            <h3>AI Chat</h3>
+            <p>
+                Talk with your personal AI companion
+                and explore endless possibilities.
+            </p>
+            <span>Explore →</span>
+        </div>
 
-    </main>
+        <div class="feature-card">
+            <div class="icon">▣</div>
+            <div class="feature-number">02</div>
+            <h3>Master Guide</h3>
+            <p>
+                Learn new things and grow your knowledge
+                from beginner to advanced.
+            </p>
+            <span>Explore →</span>
+        </div>
 
-</div>
+        <div class="feature-card">
+            <div class="icon">&lt;/&gt;</div>
+            <div class="feature-number">03</div>
+            <h3>Coding Assistant</h3>
+            <p>
+                Write, understand, debug and improve
+                your programming skills.
+            </p>
+            <span>Explore →</span>
+        </div>
 
-<script src="script.js"></script>
+        <div class="feature-card">
+            <div class="icon">♫</div>
+            <div class="feature-number">04</div>
+            <h3>Voice Assistant</h3>
+            <p>
+                Experience a more natural way
+                to interact with your AI.
+            </p>
+            <span>Explore →</span>
+        </div>
 
-</body>
-    </html>
+    </section>
+
+    <!-- ORIGINAL FOOTER -->
+    <footer>
+        <span>∞ AS INFINITY AI</span>
+        <p>Think • Learn • Create • Grow</p>
+        <span class="footer-tagline">
+            Intelligence Without Limits.
+        </span>
+    </footer>
+
+</main>
+
+</div><script src="script.js"></script></body>
+</html>
