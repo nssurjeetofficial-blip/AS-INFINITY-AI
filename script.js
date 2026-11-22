@@ -39,7 +39,9 @@ document.addEventListener("DOMContentLoaded", () => {
     function loadMemories() {
         try {
             const data = JSON.parse(localStorage.getItem(MEMORY_KEY) || "[]");
-            return Array.isArray(data) ? data.filter(x => typeof x === "string") : [];
+            return Array.isArray(data)
+                ? data.filter(item => typeof item === "string")
+                : [];
         } catch {
             return [];
         }
@@ -71,6 +73,21 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function getActiveChat() {
         return chats.find(chat => chat.id === activeChatId);
+    }
+
+    // MOBILE SIDEBAR
+    function closeMobileSidebar() {
+        if (!sidebar) return;
+
+        sidebar.classList.remove("mobile-open");
+        updateSidebarButton();
+    }
+
+    function updateSidebarButton() {
+        if (!sidebarToggle || !sidebar) return;
+
+        sidebarToggle.textContent =
+            sidebar.classList.contains("mobile-open") ? "✕" : "☰";
     }
 
     // CREATE CHAT
@@ -120,8 +137,8 @@ document.addEventListener("DOMContentLoaded", () => {
         history.querySelectorAll("[data-open-chat]").forEach(button => {
             button.addEventListener("click", () => {
                 activeChatId = button.dataset.openChat;
-closeMobileSidebar();
-openChat();
+                closeMobileSidebar();
+                openChat();
             });
         });
 
@@ -148,7 +165,6 @@ openChat();
 
     // MEMORY MANAGER
     function showMemoryManager() {
-
         const oldModal = document.querySelector("#memoryModal");
         if (oldModal) oldModal.remove();
 
@@ -157,13 +173,11 @@ openChat();
 
         modal.innerHTML = `
             <div class="memory-panel">
-
                 <div class="memory-heading">
                     <div>
                         <h2>♡ Memory Manager</h2>
                         <p>Your memories, your control.</p>
                     </div>
-
                     <button id="closeMemoryModal">×</button>
                 </div>
 
@@ -180,14 +194,12 @@ openChat();
                         maxlength="500"
                         placeholder="Write something you want AI to remember..."
                     ></textarea>
-
                     <button id="saveMemoryBtn">＋ Save Memory</button>
                 </div>
 
                 <p class="memory-note">
                     Memories are stored in this browser only.
                 </p>
-
             </div>
         `;
 
@@ -197,7 +209,6 @@ openChat();
         const input = modal.querySelector("#memoryInput");
 
         function renderMemoryList() {
-
             if (!memories.length) {
                 list.innerHTML = `
                     <div class="memory-empty">
@@ -210,17 +221,12 @@ openChat();
             list.innerHTML = memories.map((memory, index) => `
                 <div class="memory-item">
                     <span>${escapeHTML(memory)}</span>
-
-                    <button data-remove-memory="${index}">
-                        Delete
-                    </button>
+                    <button data-remove-memory="${index}">Delete</button>
                 </div>
             `).join("");
 
             list.querySelectorAll("[data-remove-memory]").forEach(button => {
-
                 button.addEventListener("click", () => {
-
                     const index = Number(button.dataset.removeMemory);
 
                     if (!confirm("Delete this saved memory?")) return;
@@ -228,9 +234,7 @@ openChat();
                     memories.splice(index, 1);
                     saveMemories();
                     renderMemoryList();
-
                 });
-
             });
         }
 
@@ -241,7 +245,6 @@ openChat();
         });
 
         modal.querySelector("#saveMemoryBtn").addEventListener("click", () => {
-
             const value = input.value.trim();
 
             if (!value) {
@@ -254,27 +257,108 @@ openChat();
                 return;
             }
 
-            if (!confirm("Do you want AS INFINITY AI to save this memory?")) {
-                return;
-            }
+            if (!confirm("Do you want AS INFINITY AI to save this memory?")) return;
 
-            memories.push(value);
+                              memories.push(value);
             saveMemories();
 
             input.value = "";
             renderMemoryList();
-
-            alert("Memory saved successfully! ♡");
-
         });
 
         renderMemoryList();
     }
 
-    // OPEN CHAT
-    function openChat() {
+    // NICKNAME MEMORY
+    function saveNickname(type) {
+        const isUser = type === "user";
 
-        if (!main) return;
+        const nickname = prompt(
+            isUser
+                ? "What nickname should I remember for you?"
+                : "What should I call AS INFINITY AI?"
+        );
+
+        if (nickname === null) return;
+
+        const value = nickname.trim();
+
+        if (!value) {
+            alert("Please enter a nickname.");
+            return;
+        }
+
+        const prefix = isUser ? "User nickname: " : "AI nickname: ";
+
+        // Replace previous nickname of the same type
+        memories = memories.filter(memory =>
+            !memory.startsWith(prefix)
+        );
+
+        memories.push(prefix + value);
+        saveMemories();
+
+        alert("♡ Nickname saved successfully!");
+    }
+
+    // FORMAT AI RESPONSE
+    function formatMessage(text) {
+        let safe = escapeHTML(text);
+
+        safe = safe.replace(
+            /```([\s\S]*?)```/g,
+            "<pre><code>$1</code></pre>"
+        );
+
+        safe = safe.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
+        safe = safe.replace(/\*(.*?)\*/g, "<em>$1</em>");
+        safe = safe.replace(/\n/g, "<br>");
+
+        return safe;
+    }
+
+    // MESSAGE HTML
+    function createMessageHTML(message, index) {
+        const isUser = message.role === "user";
+
+        return `
+            <div class="message ${isUser ? "user-message" : "ai-message"}">
+                <div class="message-avatar">
+                    ${isUser ? "👤" : "✦"}
+                </div>
+
+                <div class="message-content">
+                    <div class="message-role">
+                        ${isUser ? "You" : "AS INFINITY AI"}
+                    </div>
+
+                    <div class="message-text">
+                        ${isUser
+                            ? escapeHTML(message.content).replace(/\n/g, "<br>")
+                            : formatMessage(message.content)}
+                    </div>
+
+                    ${!isUser ? `
+                        <div class="nickname-actions">
+                            <button class="save-user-nickname">
+                                ♡ Save My Nickname
+                            </button>
+
+                            <button class="save-ai-nickname">
+                                ♡ Save AI Nickname
+                            </button>
+                        </div>
+                    ` : ""}
+                </div>
+            </div>
+        `;
+    }
+
+    // RENDER MESSAGES
+    function renderMessages() {
+        const messageArea = document.querySelector("#messages");
+
+        if (!messageArea) return;
 
         const chat = getActiveChat();
 
@@ -283,826 +367,312 @@ openChat();
             return;
         }
 
+        messageArea.innerHTML = chat.messages
+            .map((message, index) => createMessageHTML(message, index))
+            .join("");
+
+        messageArea.querySelectorAll(".save-user-nickname").forEach(button => {
+            button.addEventListener("click", () => saveNickname("user"));
+        });
+
+        messageArea.querySelectorAll(".save-ai-nickname").forEach(button => {
+            button.addEventListener("click", () => saveNickname("ai"));
+        });
+
+        messageArea.scrollTop = messageArea.scrollHeight;
+    }
+
+    // HOME SCREEN
+    function showHome() {
+        if (!main) return;
+
+        activeChatId = null;
+
+        main.innerHTML = homeContent;
+
+        attachHomeEvents();
+        renderSidebarHistory();
+    }
+
+    // HOME SCREEN EVENTS
+    function attachHomeEvents() {
+        const input =
+            document.querySelector("#messageInput") ||
+            document.querySelector("#promptInput");
+
+        const sendButton =
+            document.querySelector("#sendButton") ||
+            document.querySelector("#sendBtn");
+
+        const memoryButton =
+            document.querySelector("#memoryButton") ||
+            document.querySelector("#memoryBtn");
+
+        const newChatButton =
+            document.querySelector("#newChatButton") ||
+            document.querySelector("#newChatBtn");
+
+        if (memoryButton) {
+            memoryButton.onclick = showMemoryManager;
+        }
+
+        if (newChatButton) {
+            newChatButton.onclick = () => createChat();
+        }
+
+        if (sendButton && input) {
+            sendButton.onclick = () => {
+                sendMessage(input.value);
+            };
+        }
+
+        if (input) {
+            input.addEventListener("keydown", event => {
+                if (event.key === "Enter" && !event.shiftKey) {
+                    event.preventDefault();
+                    sendMessage(input.value);
+                }
+            });
+        }
+
+        // Suggestion prompts
+        document.querySelectorAll("[data-prompt]").forEach(button => {
+            button.addEventListener("click", () => {
+                const promptText = button.dataset.prompt;
+
+                if (promptText) sendMessage(promptText);
+            });
+        });
+    }
+
+    // OPEN CHAT
+    function openChat() {
+        const chat = getActiveChat();
+
+        if (!chat || !main) {
+            showHome();
+            return;
+        }
+
         main.innerHTML = `
-
-            <section class="ai-chat-page">
-
-                <header class="chat-topbar">
-
-                    <button class="chat-home-button" id="backHomeBtn">⌂</button>
-
-                    <div class="chat-brand">
-                        <span class="brand-infinity">∞</span>
-                        <span>AS INFINITY AI</span>
-                        <span class="brand-dot"></span>
-                    </div>
-
-                    <div class="chat-actions">
-                        <button class="memory-open-button" id="memoryOpenBtn">♡</button>
-                        <button class="chat-new-button" id="chatMenuBtn">+</button>
-                    </div>
-
-                </header>
-
-                <div class="chat-messages" id="chatMessages"></div>
-
-                <div class="chat-composer-area">
-
-                    <div class="chat-composer">
-
-                        <textarea
-                            id="aiMessageInput"
-                            placeholder="Message AS INFINITY AI..."
-                            rows="1"
-                        ></textarea>
-
-                        <button id="aiSendButton">↑</button>
-
-                    </div>
-
-                    <div class="chat-disclaimer">
-                        AS INFINITY AI can make mistakes.
-                        Verify important information.
-                    </div>
-
+            <div class="chat-header">
+                <button id="backHomeButton">←</button>
+                <div class="chat-header-title">
+                    <h3>AS INFINITY AI</h3>
+                    <span>Intelligence Without Limits.</span>
                 </div>
+                <button id="chatMemoryButton">♡</button>
+            </div>
 
-            </section>
+            <div id="messages" class="messages-area"></div>
+
+            <div class="chat-input-area">
+                <textarea
+                    id="messageInput"
+                    placeholder="Message AS INFINITY AI..."
+                    rows="1"
+                ></textarea>
+
+                <button id="sendButton">➤</button>
+            </div>
         `;
 
-        document.querySelector("#backHomeBtn").onclick = showHome;
-        document.querySelector("#chatMenuBtn").onclick = createChat;
-        document.querySelector("#memoryOpenBtn").onclick = showMemoryManager;
+        document.querySelector("#backHomeButton").onclick = showHome;
 
-        const input = document.querySelector("#aiMessageInput");
-        const button = document.querySelector("#aiSendButton");
+        document.querySelector("#chatMemoryButton").onclick =
+            showMemoryManager;
 
+        const input = document.querySelector("#messageInput");
+
+        input.addEventListener("input", () => {
+            input.style.height = "auto";
+            input.style.height = Math.min(input.scrollHeight, 150) + "px";
+        });
+
+        attachHomeEvents();
         renderMessages();
         renderSidebarHistory();
 
-        // SEND MESSAGE
-        async function sendChat() {
+        input.focus();
+    }
 
-            const message = input.value.trim();
+                              // SEND MESSAGE
+    async function sendMessage(text) {
+        const message = String(text || "").trim();
 
-            if (!message || button.disabled) return;
+        if (!message) return;
 
-            const currentChat = getActiveChat();
-            if (!currentChat) return;
+        let chat = getActiveChat();
 
-            currentChat.messages.push({
-                role: "user",
-                content: message
+        if (!chat) {
+            chat = createChat();
+        }
+
+        chat.messages.push({
+            role: "user",
+            content: message
+        });
+
+        if (chat.messages.length === 1) {
+            chat.title = message.length > 35
+                ? message.slice(0, 35) + "..."
+                : message;
+        }
+
+        chat.updated = Date.now();
+
+        saveChats();
+        openChat();
+
+        const input = document.querySelector("#messageInput");
+        if (input) input.value = "";
+
+        chat.messages.push({
+            role: "assistant",
+            content: "Thinking..."
+        });
+
+        renderMessages();
+
+        try {
+            const response = await fetch(API_URL, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    message: message,
+                    history: chat.messages
+                        .filter(item => item.content !== "Thinking...")
+                        .slice(-20),
+                    memories: memories
+                })
             });
 
-            currentChat.updated = Date.now();
-
-            if (
-                currentChat.title === "New Chat" &&
-                currentChat.messages.length === 1
-            ) {
-                currentChat.title =
-                    message.length > 28
-                        ? message.substring(0, 28) + "..."
-                        : message;
+            if (!response.ok) {
+                throw new Error("Server error: " + response.status);
             }
 
-            input.value = "";
-            input.style.height = "auto";
+            const data = await response.json();
+
+            const aiReply =
+                data.response ||
+                data.reply ||
+                data.result ||
+                data.message ||
+                "Sorry, I couldn't generate a response.";
+
+            chat.messages[chat.messages.length - 1] = {
+                role: "assistant",
+                content: aiReply
+            };
+
+            chat.updated = Date.now();
 
             saveChats();
             renderMessages();
             renderSidebarHistory();
 
-            button.disabled = true;
+        } catch (error) {
+            console.error("AS INFINITY AI Error:", error);
 
-            const messagesBox = document.querySelector("#chatMessages");
+            chat.messages[chat.messages.length - 1] = {
+                role: "assistant",
+                content: "I'm having trouble connecting right now. Please try again."
+            };
 
-            const typing = document.createElement("div");
-            typing.className = "ai-message";
-
-            typing.innerHTML = `
-                <div class="message-avatar">∞</div>
-                <div class="message-content">
-                    <span class="typing-indicator">
-                        <span></span><span></span><span></span>
-                    </span>
-                </div>
-            `;
-
-            messagesBox.appendChild(typing);
-            messagesBox.scrollTop = messagesBox.scrollHeight;
-
-            try {
-
-                // Current message is already pushed.
-                // Worker adds it separately, so send previous messages only.
-                const history = currentChat.messages
-                    .slice(0, -1)
-                    .slice(-10);
-
-                const response = await fetch(API_URL, {
-
-                    method: "POST",
-
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-
-                    body: JSON.stringify({
-                        message: message,
-                        history: history,
-                        memories: memories
-                    })
-
-                });
-
-                if (!response.ok) {
-                    throw new Error("Server error: " + response.status);
-                }
-
-                const result = await response.json();
-
-                const reply =
-                    result.reply ||
-                    result.choices?.[0]?.message?.content ||
-                    result.response ||
-                    result.message ||
-                    "";
-
-                if (!reply) {
-                    throw new Error("Empty AI response");
-                }
-
-                currentChat.messages.push({
-                    role: "assistant",
-                    content: reply
-                });
-
-                currentChat.updated = Date.now();
-
-                saveChats();
-                renderMessages();
-                renderSidebarHistory();
-
-            } catch (error) {
-
-                console.error("AI Error:", error);
-
-                typing.innerHTML = `
-                    <div class="message-avatar">∞</div>
-                    <div class="message-content">
-                        Sorry, connection problem.
-                        Please try again.
-                    </div>
-                `;
-
-            } finally {
-
-                if (typing.isConnected) typing.remove();
-
-                button.disabled = false;
-
-            }
+            saveChats();
+            renderMessages();
         }
-
-        button.addEventListener("click", sendChat);
-
-        input.addEventListener("keydown", event => {
-
-            if (event.key === "Enter" && !event.shiftKey) {
-                event.preventDefault();
-                sendChat();
-            }
-
-        });
-
-        input.addEventListener("input", () => {
-
-            input.style.height = "auto";
-            input.style.height =
-                Math.min(input.scrollHeight, 130) + "px";
-
-        });
     }
 
-    // PERSONAL NICKNAME MEMORY
-function saveNickname(type) {
-    const label = type === "user"
-        ? "User nickname: "
-        : "AI nickname: ";
-
-    const nickname = prompt(
-        type === "user"
-            ? "What nickname should AI call you?"
-            : "What nickname should AI remember for itself?"
-    );
-
-    if (!nickname || !nickname.trim()) return;
-
-    const value = label + nickname.trim();
-
-    const existing = memories.findIndex(item =>
-        item.startsWith(label)
-    );
-
-    if (existing !== -1) {
-        memories[existing] = value;
-    } else {
-        if (memories.length >= 12) {
-            alert("Memory limit reached. Delete an old memory first.");
-            return;
-        }
-
-        memories.push(value);
-    }
-
-    saveMemories();
-    alert("Nickname saved successfully! ♡");
-}
-    // RENDER MESSAGES
-function renderMessages() {
-
-    const box = document.querySelector("#chatMessages");
-    const chat = getActiveChat();
-
-    if (!box || !chat) return;
-
-    if (!chat.messages || !chat.messages.length) {
-        box.innerHTML = "";
-        return;
-    }
-
-    box.innerHTML = chat.messages.map((message, index) => {
-
-        const isUser = message.role === "user";
-
-        return `
-            <div class="message-row ${isUser ? "user-row" : "assistant-row"}">
-
-                ${isUser ? "" : `<div class="message-avatar">∞</div>`}
-
-                <div class="message-content">
-                    ${escapeHTML(message.content).replace(/\n/g, "<br>")}
-
-                    ${!isUser ? `
-                        <div style="display:flex;gap:7px;flex-wrap:wrap;margin-top:10px;">
-                            <button data-save-user-nickname
-                                style="background:#30202d;color:#ff70b8;border:1px solid #ff70b8;border-radius:8px;padding:7px;font-size:11px;">
-                                ♡ Save My Nickname
-                            </button>
-
-                            <button data-save-ai-nickname
-                                style="background:#30202d;color:#ff70b8;border:1px solid #ff70b8;border-radius:8px;padding:7px;font-size:11px;">
-                                ♡ Save AI Nickname
-                            </button>
-                        </div>
-                    ` : ""}
-                </div>
-
-            </div>
-        `;
-
-    }).join("");
-
-    box.querySelectorAll("[data-save-user-nickname]").forEach(button => {
-        button.onclick = () => saveNickname("user");
-    });
-
-    box.querySelectorAll("[data-save-ai-nickname]").forEach(button => {
-        button.onclick = () => saveNickname("ai");
-    });
-
-    box.scrollTop = box.scrollHeight;
-}
-innerHTML = "";
-        return;
-    }
-                  // HOME PAGE
-function showHome() {
-    if (!main) return;
-
-    activeChatId = null;
-    main.innerHTML = homeContent;
-
-    attachHomeEvents();
-    renderSidebarHistory();
-    closeMobileSidebar();
-}
-
-
-// HOME EVENTS
-function attachHomeEvents() {
-
-    const chatInput = document.querySelector(".chat-box input");
-    const chatButton = document.querySelector(".chat-box button");
-
-    if (chatInput && chatButton) {
-
-        chatButton.addEventListener("click", () => {
-
-            const message = chatInput.value.trim();
-            if (!message) return;
-
-            createChat();
-
-            setTimeout(() => {
-
-                const input = document.querySelector("#aiMessageInput");
-                const button = document.querySelector("#aiSendButton");
-
-                if (input && button) {
-                    input.value = message;
-                    button.click();
-                }
-
-            }, 100);
-
-        });
-
-        chatInput.addEventListener("keydown", event => {
-
-            if (event.key === "Enter") {
-                event.preventDefault();
-                chatButton.click();
-            }
-
-        });
-    }
-
-    document.querySelectorAll(".feature-card").forEach(card => {
-
-        card.addEventListener("click", () => {
-
-            const title =
-                card.querySelector("h3")?.textContent || "Feature";
-
-            alert(title + " is coming soon to AS INFINITY AI.");
-
-        });
-
-    });
-
-    document.querySelectorAll("nav a").forEach(link => {
-
-        link.addEventListener("click", event => {
-
-            const text = link.textContent.trim().toLowerCase();
-
-            if (text.includes("new chat") || text.includes("chat")) {
-                event.preventDefault();
-                createChat();
-            }
-
-        });
-
-    });
-
-}        
-    // MOBILE SIDEBAR
-    function closeMobileSidebar() {
-
-        if (!sidebar) return;
-
-        sidebar.classList.remove("mobile-open");
-        updateSidebarButton();
-    }
-
-    function updateSidebarButton() {
-
-        if (!sidebarToggle || !sidebar) return;
-
-        sidebarToggle.textContent =
-            sidebar.classList.contains("mobile-open") ? "✕" : "☰";
-    }
-
-    if (sidebarToggle && sidebar) {
-
+    // SIDEBAR TOGGLE
+    if (sidebarToggle) {
         sidebarToggle.addEventListener("click", () => {
+            if (!sidebar) return;
 
             sidebar.classList.toggle("mobile-open");
             updateSidebarButton();
-
         });
     }
 
-    // SIDEBAR NEW CHAT
+    // NEW CHAT BUTTON
     if (sidebarNewChat) {
-
-        sidebarNewChat.addEventListener("click", event => {
-
-            event.preventDefault();
-            createChat();
+        sidebarNewChat.addEventListener("click", () => {
             closeMobileSidebar();
-
+            createChat();
         });
     }
 
-    // RESPONSIVE CSS
-    const responsiveStyle = document.createElement("style");
+    // TOPBAR MEMORY BUTTON
+    document.querySelectorAll(
+        "#memoryButton, #memoryBtn, [data-memory-manager]"
+    ).forEach(button => {
+        button.addEventListener("click", showMemoryManager);
+    });
 
-    responsiveStyle.textContent = `
-
-        .ai-chat-page {
-            width:100%;
-            height:100%;
-            min-height:0;
-            display:flex;
-            flex-direction:column;
-            overflow:hidden;
-            background:#08080d;
-            color:white;
-        }
-
-        .chat-topbar {
-            height:62px;
-            min-height:62px;
-            display:flex;
-            align-items:center;
-            justify-content:space-between;
-            padding:0 18px;
-            border-bottom:1px solid rgba(255,255,255,.08);
-            position:relative;
-        }
-
-        .chat-home-button,
-        .chat-new-button,
-        .memory-open-button {
-            width:38px;
-            height:38px;
-            border:1px solid rgba(255,255,255,.12);
-            border-radius:12px;
-            background:#15121b;
-            color:#ff70b8;
-            font-size:22px;
-            cursor:pointer;
-        }
-
-        .chat-actions {
-            display:flex;
-            gap:8px;
-            align-items:center;
-        }
-
-        .chat-brand {
-            position:absolute;
-            left:50%;
-            transform:translateX(-50%);
-            display:flex;
-            align-items:center;
-            gap:7px;
-            white-space:nowrap;
-            font-size:14px;
-            font-weight:800;
-            letter-spacing:1px;
-        }
-
-        .brand-infinity {
-            color:#ff70b8;
-            font-size:25px;
-        }
-
-        .brand-dot {
-            width:7px;
-            height:7px;
-            border-radius:50%;
-            background:#ff70b8;
-        }
-
-        .chat-messages {
-            flex:1;
-            min-height:0;
-            overflow-y:auto;
-            padding:22px 16px;
-            display:flex;
-            flex-direction:column;
-            gap:20px;
-            overscroll-behavior:contain;
-        }
-
-        .message-row {
-            display:flex;
-            align-items:flex-start;
-            gap:10px;
-            max-width:850px;
-            width:100%;
-            margin:0 auto;
-        }
-
-        .user-row {
-            justify-content:flex-end;
-        }
-
-        .assistant-row .message-content {
-            background:#17141d;
-            color:#f5f1f7;
-            border:1px solid rgba(255,255,255,.06);
-            border-bottom-left-radius:4px;
-        }
-
-        .chat-composer-area {
-            flex-shrink:0;
-            padding:12px 15px 10px;
-            background:#08080d;
-            border-top:1px solid rgba(255,255,255,.06);
-        }
-
-        .chat-composer {
-            max-width:850px;
-            margin:0 auto;
-            display:flex;
-            align-items:flex-end;
-            gap:10px;
-            padding:10px 12px;
-            background:#17141d;
-            border:1px solid rgba(255,112,184,.25);
-            border-radius:17px;
-        }
-
-        .chat-composer textarea {
-            flex:1;
-            min-width:0;
-            max-height:130px;
-            resize:none;
-            border:none;
-            outline:none;
-            background:transparent;
-            color:white;
-            font:inherit;
-            font-size:15px;
-            padding:7px 3px;
-        }
-
-        .chat-composer textarea::placeholder {
-            color:#8d8493;
-        }
-
-        .chat-composer button {
-            width:38px;
-            height:38px;
-            min-width:38px;
-            border:none;
-            border-radius:12px;
-            background:#ff70b8;
-            color:#190b13;
-            font-size:23px;
-            font-weight:bold;
-            cursor:pointer;
-        }
-
-        .chat-composer button:disabled {
-            opacity:.5;
-            cursor:not-allowed;
-        }
-
-        .chat-disclaimer {
-            padding-top:8px;
-            text-align:center;
-            color:#77717e;
-            font-size:10px;
-        }
-
-        .typing-indicator {
-            display:flex;
-            gap:5px;
-            padding:5px 0;
-        }
-
-        .typing-indicator span {
-            width:7px;
-            height:7px;
-            border-radius:50%;
-            background:#ff70b8;
-            animation:aiTyping 1s infinite alternate;
-        }
-
-        .typing-indicator span:nth-child(2) {
-            animation-delay:.2s;
-        }
-
-        .typing-indicator span:nth-child(3) {
-            animation-delay:.4s;
-        }
-
-        @keyframes aiTyping {
-            from {opacity:.3;transform:translateY(0);}
-            to {opacity:1;transform:translateY(-4px);}
-        }
-
-        .history-item {
-            display:flex;
-            align-items:center;
-            justify-content:space-between;
-            gap:5px;
-            margin:4px 7px;
-            border-radius:9px;
-        }
-
-        .history-item.active {
-            background:rgba(255,112,184,.12);
-        }
-
-        .history-chat-button {
-            flex:1;
-            min-width:0;
-            display:flex;
-            align-items:center;
-            gap:8px;
-            padding:10px;
-            border:none;
-            background:transparent;
-            color:#eee;
-            text-align:left;
-            cursor:pointer;
-        }
-
-        .history-title {
-            overflow:hidden;
-            white-space:nowrap;
-            text-overflow:ellipsis;
-            font-size:13px;
-        }
-
-        .history-delete {
-            border:none;
-            background:transparent;
-            color:#aaa;
-            padding:8px;
-            cursor:pointer;
-            font-size:19px;
-        }
-
-        .history-empty {
-            padding:12px;
-            color:#8d8493;
-            font-size:12px;
-        }
-
-        /* MEMORY MANAGER */
-
-        #memoryModal {
-            position:fixed;
-            inset:0;
-            z-index:99999;
-            background:rgba(0,0,0,.78);
-            display:flex;
-            justify-content:center;
-            align-items:center;
-            padding:15px;
-        }
-
-        .memory-panel {
-            width:100%;
-            max-width:440px;
-            max-height:85vh;
-            overflow-y:auto;
-            background:#15121b;
-            border:1px solid rgba(255,112,184,.35);
-            border-radius:20px;
-            padding:20px;
-            color:white;
-            box-shadow:0 0 35px rgba(255,112,184,.12);
-        }
-
-        .memory-heading {
-            display:flex;
-            justify-content:space-between;
-            align-items:center;
-        }
-
-        .memory-heading h2 {
-            margin:0;
-            color:#ff70b8;
-            font-size:20px;
-        }
-
-        .memory-heading p,
-        .memory-note {
-            color:#999;
-            font-size:12px;
-        }
-
-        #closeMemoryModal {
-            background:transparent;
-            border:none;
-            color:white;
-            font-size:27px;
-            cursor:pointer;
-        }
-
-        .memory-info {
-            background:rgba(255,112,184,.10);
-            padding:12px;
-            border-radius:12px;
-            font-size:12px;
-            line-height:1.5;
-            margin:15px 0;
-            color:#f5d9e8;
-        }
-
-        .memory-item {
-            display:flex;
-            justify-content:space-between;
-            align-items:center;
-            gap:10px;
-            background:#211b29;
-            border:1px solid rgba(255,255,255,.06);
-            border-radius:11px;
-            padding:11px;
-            margin-bottom:9px;
-            font-size:13px;
-            overflow-wrap:anywhere;
-        }
-
-        .memory-item button {
-            background:rgba(255,112,184,.13);
-            color:#ff70b8;
-            border:0;
-            border-radius:8px;
-            padding:7px 9px;
-            cursor:pointer;
-            flex-shrink:0;
-        }
-
-        .memory-empty {
-            text-align:center;
-            color:#999;
-            padding:20px 5px;
-            font-size:13px;
-        }
-
-        .memory-add-area {
-            margin-top:15px;
-        }
-
-        .memory-add-area textarea {
-            width:100%;
-            min-height:85px;
-            resize:vertical;
-            box-sizing:border-box;
-            background:#0d0b12;
-            border:1px solid rgba(255,112,184,.3);
-            border-radius:11px;
-            padding:12px;
-            color:white;
-            outline:none;
-            font:inherit;
-            font-size:13px;
-        }
-
-        #saveMemoryBtn {
-            width:100%;
-            margin-top:10px;
-            padding:12px;
-            background:#ff70b8;
-            color:#190b13;
-            border:0;
-            border-radius:11px;
-            font-weight:bold;
-            cursor:pointer;
-        }
-
-        .memory-note {
-            text-align:center;
-            margin-bottom:0;
-        }
-
-        @media(max-width:650px) {
-
-            .ai-chat-page {
-                height:100%;
-                height:100dvh;
-            }
-
-            .chat-topbar {
-                height:56px;
-                min-height:56px;
-                padding:0 12px;
-            }
-
-            .chat-messages {
-                padding:16px 11px;
-            }
-
-            .message-content {
-                max-width:88%;
-                font-size:14px;
-            }
-
-            .chat-composer-area {
-                padding:9px 10px 8px;
-            }
-
-        }
-
-    `;
-
-    document.head.appendChild(responsiveStyle);
+    // TOPBAR NEW CHAT BUTTON
+    document.querySelectorAll(
+        "#newChatButton, #newChatBtn, [data-new-chat]"
+    ).forEach(button => {
+        button.addEventListener("click", () => {
+            createChat();
+        });
+    });
 
     // INITIALIZE
-    renderSidebarHistory();
-    attachHomeEvents();
-    updateSidebarButton();
+    function initializeApp() {
+        renderSidebarHistory();
+
+        if (chats.length > 0) {
+            const latestChat = [...chats].sort(
+                (a, b) => (b.updated || 0) - (a.updated || 0)
+            )[0];
+
+            activeChatId = latestChat.id;
+            openChat();
+        } else {
+            showHome();
+        }
+    }
+
+    initializeApp();
+    // RESPONSIVE SIDEBAR
+    window.addEventListener("resize", () => {
+        if (window.innerWidth > 768) {
+            closeMobileSidebar();
+        }
+    });
+
+    // CLOSE SIDEBAR AFTER CHAT SELECTION
+    document.addEventListener("click", event => {
+        if (
+            window.innerWidth <= 768 &&
+            sidebar &&
+            sidebar.classList.contains("mobile-open") &&
+            !sidebar.contains(event.target) &&
+            event.target !== sidebarToggle
+        ) {
+            closeMobileSidebar();
+        }
+    });
+
+    // KEYBOARD SHORTCUT: NEW CHAT
+    document.addEventListener("keydown", event => {
+        if (
+            (event.ctrlKey || event.metaKey) &&
+            event.key.toLowerCase() === "k"
+        ) {
+            event.preventDefault();
+            createChat();
+        }
+    });
+
+    // FINAL INITIALIZATION
+    console.log("AS INFINITY AI initialized successfully.");
+    console.log("Saved chats:", chats.length);
+    console.log("Saved memories:", memories.length);
 
 });
 
+                          
