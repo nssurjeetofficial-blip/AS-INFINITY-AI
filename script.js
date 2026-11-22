@@ -578,44 +578,30 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if (chatInput && chatButton) {
 
-            chatButton.addEventListener("click", () => {
+        chatButton.addEventListener("click", () => {
 
-                const message = chatInput.value.trim();
+    const message = chatInput.value.trim();
 
-                if (!message) return;
+    if (!message) return;
 
-                const chat = createChat();
+    createChat();
 
-                chat.messages.push({
-                    role: "user",
-                    content: message
-                });
+    setTimeout(() => {
 
-                chat.title =
-                    message.length > 28
-                        ? message.substring(0, 28) + "..."
-                        : message;
+        const input =
+            document.querySelector("#aiMessageInput");
 
-                saveChats();
+        const button =
+            document.querySelector("#aiSendButton");
 
-                openChat();
+        if (input && button) {
+            input.value = message;
+            button.click();
+        }
 
-                setTimeout(() => {
+    }, 100);
 
-                    const input =
-                        document.querySelector("#aiMessageInput");
-
-                    const button =
-                        document.querySelector("#aiSendButton");
-
-                    if (input && button) {
-                        input.value = message;
-                        button.click();
-                    }
-
-                }, 100);
-
-            });
+});
 
             chatInput.addEventListener("keydown", event => {
 
