@@ -559,3 +559,366 @@ footer {
     display: block;
     margin-bottom: 4px;
 }
+/* =================================
+   AS INFINITY AI - SIDEBAR REDESIGN
+================================= */
+
+.sidebar {
+    width: 265px;
+    padding: 25px 16px;
+    transition: width 0.3s ease, transform 0.3s ease;
+    overflow-x: hidden;
+}
+
+.brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 45px;
+    min-height: 55px;
+}
+
+.brand .logo {
+    width: 43px;
+    height: 43px;
+    min-width: 43px;
+    display: grid;
+    place-items: center;
+    border-radius: 13px;
+    background: rgba(255, 63, 164, 0.12);
+    border: 1px solid rgba(255, 63, 164, 0.3);
+    color: var(--pink);
+    font-size: 31px;
+    text-shadow: 0 0 18px var(--pink);
+}
+
+.brand-text {
+    min-width: 0;
+    white-space: nowrap;
+}
+
+.brand-text h2 {
+    font-size: 15px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    color: white;
+}
+
+.brand-text p {
+    font-size: 9px;
+    color: var(--pink-light);
+    margin-top: 5px;
+    letter-spacing: 0.3px;
+}
+
+.sidebar-label {
+    color: #806d7d;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    padding: 0 13px;
+    margin-bottom: 14px;
+}
+
+.sidebar-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.sidebar-nav a {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    min-height: 47px;
+    padding: 11px 14px;
+    color: var(--muted);
+    border-radius: 12px;
+    white-space: nowrap;
+    transition: 0.25s ease;
+}
+
+.sidebar-nav a:hover,
+.sidebar-nav a.active {
+    color: white;
+    background: rgba(255, 63, 164, 0.12);
+    box-shadow: inset 3px 0 var(--pink);
+}
+
+.nav-icon {
+    width: 22px;
+    min-width: 22px;
+    text-align: center;
+    font-size: 19px;
+    color: var(--pink-light);
+}
+
+.nav-text {
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.sidebar-divider {
+    height: 1px;
+    background: var(--border);
+    margin: 12px 5px;
+}
+
+.sidebar-bottom {
+    margin-top: auto;
+}
+
+.profile {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    padding: 13px 9px;
+}
+
+.avatar {
+    width: 37px;
+    height: 37px;
+    min-width: 37px;
+    display: grid;
+    place-items: center;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #ff3fa4, #a90062);
+    color: white;
+    font-weight: 800;
+}
+
+.profile-info {
+    min-width: 0;
+    white-space: nowrap;
+}
+
+.profile-info h4 {
+    font-size: 11px;
+}
+
+.profile-info p {
+    color: var(--muted);
+    font-size: 9px;
+    margin-top: 4px;
+}
+
+.profile-menu {
+    margin-left: auto;
+    color: var(--muted);
+}
+
+/* COLLAPSE BUTTON */
+
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 17px;
+    min-width: 0;
+    flex: 1;
+}
+
+.sidebar-toggle {
+    width: 42px;
+    height: 42px;
+    min-width: 42px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 5px;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: var(--surface);
+    cursor: pointer;
+    transition: 0.25s;
+}
+
+.sidebar-toggle:hover {
+    border-color: var(--pink);
+    background: rgba(255, 63, 164, 0.1);
+}
+
+.sidebar-toggle span {
+    width: 17px;
+    height: 2px;
+    border-radius: 5px;
+    background: var(--pink-light);
+}
+
+/* COLLAPSED SIDEBAR */
+
+.app.sidebar-collapsed .sidebar {
+    width: 82px;
+    padding-left: 13px;
+    padding-right: 13px;
+}
+
+.app.sidebar-collapsed .brand {
+    justify-content: center;
+}
+
+.app.sidebar-collapsed .brand-text,
+.app.sidebar-collapsed .sidebar-label,
+.app.sidebar-collapsed .nav-text,
+.app.sidebar-collapsed .profile-info,
+.app.sidebar-collapsed .profile-menu {
+    display: none;
+}
+
+.app.sidebar-collapsed .sidebar-nav a {
+    justify-content: center;
+    padding: 12px 5px;
+}
+
+.app.sidebar-collapsed .nav-icon {
+    font-size: 21px;
+}
+
+.app.sidebar-collapsed .profile {
+    justify-content: center;
+}
+
+/* HEADER REDESIGN */
+
+.topbar {
+    min-height: 55px;
+    padding-bottom: 17px;
+    border-bottom: 1px solid var(--border);
+}
+
+.search {
+    width: min(420px, 100%);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 0 14px;
+    border: 1px solid var(--border);
+    border-radius: 13px;
+    background: rgba(20, 13, 22, 0.8);
+}
+
+.search > span:first-child {
+    color: var(--pink);
+    font-size: 22px;
+}
+
+.search input {
+    width: 100%;
+    padding: 13px 0;
+    border: none;
+    outline: none;
+    background: transparent;
+    color: white;
+    font-size: 12px;
+}
+
+.search-shortcut {
+    color: #806d7d;
+    font-size: 10px;
+    white-space: nowrap;
+}
+
+.topbar-right {
+    display: flex;
+    align-items: center;
+    gap: 13px;
+}
+
+.status-badge {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 13px;
+    border: 1px solid var(--border);
+    border-radius: 30px;
+    color: var(--pink-light);
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 1px;
+}
+
+.status-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #ff4eae;
+    box-shadow: 0 0 10px #ff4eae;
+}
+
+.theme-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--pink-light);
+    font-size: 19px;
+    cursor: pointer;
+}
+
+/* MOBILE */
+
+@media (max-width: 650px) {
+
+    .sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        z-index: 100;
+        width: 265px;
+        transform: translateX(-105%);
+        box-shadow: 15px 0 50px rgba(0, 0, 0, 0.5);
+    }
+
+    .sidebar.mobile-open {
+        transform: translateX(0);
+    }
+
+    .app.sidebar-collapsed .sidebar {
+        width: 265px;
+    }
+
+    .app.sidebar-collapsed .brand-text,
+    .app.sidebar-collapsed .sidebar-label,
+    .app.sidebar-collapsed .nav-text,
+    .app.sidebar-collapsed .profile-info,
+    .app.sidebar-collapsed .profile-menu {
+        display: block;
+    }
+
+    .app.sidebar-collapsed .sidebar-nav a {
+        justify-content: flex-start;
+        padding: 11px 14px;
+    }
+
+    .app.sidebar-collapsed .brand {
+        justify-content: flex-start;
+    }
+
+    .app.sidebar-collapsed .profile {
+        justify-content: flex-start;
+    }
+
+    .header-left {
+        gap: 9px;
+    }
+
+    .search {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .search-shortcut {
+        display: none;
+    }
+
+    .status-badge {
+        padding: 9px;
+        font-size: 8px;
+    }
+
+    .topbar-right {
+        gap: 7px;
+    }
+    }
