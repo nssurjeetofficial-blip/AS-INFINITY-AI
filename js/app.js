@@ -223,16 +223,21 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function openChat(id) {
 
-        const chat = chats.find(item => item.id === id);
+    const chat = chats.find(item => item.id === id);
 
-        if (!chat) return;
+    if (!chat) return;
 
-        activeChatId = id;
+    activeChatId = id;
 
-        renderChat();
-        updateSidebar();
+    renderChat();
+    updateSidebar();
 
-        input.focus();
+    // Automatically close mobile sidebar
+    if (window.innerWidth <= 650) {
+        sidebar.classList.remove("mobile-open");
+    }
+
+    input.focus();
     }
 
     // =================================
