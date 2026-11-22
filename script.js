@@ -1,4 +1,4 @@
-// AS INFINITY AI - Real AI Connection
+// AS INFINITY AI - Chat History & New Chat
 
 document.addEventListener("DOMContentLoaded", () => {
 
@@ -7,7 +7,40 @@ const API_URL = "https://as-infinity-ai.nssurjeetofficial.workers.dev";
 const main = document.querySelector(".main");
 const navLinks = document.querySelectorAll("nav a");
 
-let chatHistory = [];
+const STORAGE_KEY = "as_infinity_ai_chats";
+
+let chats = [];
+let activeChatId = null;
+
+// Load saved chats
+try {
+    chats = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+} catch {
+    chats = [];
+}
+
+function saveChats() {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(chats));
+}
+
+function createChat() {
+    const chat = {
+        id: Date.now().toString(),
+        title: "New Conversation",
+        messages: [],
+        updated: Date.now()
+    };
+
+    chats.unshift(chat);
+    activeChatId = chat.id;
+
+    saveChats();
+    return chat;
+}
+
+function getActiveChat() {
+    return chats.find(chat => chat.id === activeChatId);
+}
 
 function notify(message) {
     document.querySelector(".toast")?.remove();
@@ -17,13 +50,17 @@ function notify(message) {
     toast.textContent = message;
 
     document.body.appendChild(toast);
+
     setTimeout(() => toast.remove(), 3000);
 }
 
-// Chat styles
+
+// CHAT STYLES
+
 const chatStyles = document.createElement("style");
 
 chatStyles.textContent = `
+
 .ai-chat-page {
     max-width: 900px;
     margin: 25px auto;
@@ -34,7 +71,7 @@ chatStyles.textContent = `
 
 .chat-heading {
     text-align: center;
-    padding: 25px 10px;
+    padding: 20px 10px;
 }
 
 .chat-heading h2 {
@@ -46,6 +83,58 @@ chatStyles.textContent = `
     color: #a49ba1;
     font-size: 13px;
     margin-top: 8px;
+}
+
+.chat-topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 15px;
+}
+
+.back-home,
+.new-chat-btn {
+    background: #21101a;
+    color: #ff75bd;
+    border: 1px solid #402033;
+    padding: 10px 14px;
+    border-radius: 9px;
+    cursor: pointer;
+}
+
+.new-chat-btn {
+    background: #ff3d9a;
+    color: white;
+    border: none;
+}
+
+.chat-history {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    padding: 8px 2px 15px;
+}
+
+.history-item {
+    flex-shrink: 0;
+    max-width: 170px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    background: #171215;
+    border: 1px solid #38232f;
+    color: #ddd;
+    padding: 9px 13px;
+    border-radius: 9px;
+    cursor: pointer;
+    font-size: 12px;
+}
+
+.history-item.active {
+    border-color: #ff3d9a;
+    color: #ff75bd;
 }
 
 .chat-messages {
@@ -115,6 +204,7 @@ chatStyles.textContent = `
     background: #ff3d9a;
     color: white;
     font-size: 19px;
+    cursor: pointer;
 }
 
 .chat-composer button:disabled {
@@ -127,16 +217,14 @@ chatStyles.textContent = `
     padding: 10px;
 }
 
-.back-home {
-    background: #21101a;
-    color: #ff75bd;
-    border: 1px solid #402033;
-    padding: 10px 16px;
-    border-radius: 9px;
-    margin-bottom: 15px;
+.empty-history {
+    color: #8e858b;
+    font-size: 12px;
+    padding: 10px;
 }
 
 @media(max-width:600px) {
+
     .ai-chat-page {
         margin: 10px auto;
         min-height: 70vh;
@@ -154,15 +242,20 @@ chatStyles.textContent = `
     .chat-composer {
         bottom: 75px;
     }
+
 }
+
 `;
 
 document.head.appendChild(chatStyles);
 
 const homeContent = main.innerHTML;
 
-// Add message
+
+// ADD MESSAGE
+
 function addMessage(message, sender) {
+
     const messages = document.querySelector("#chatMessages");
     if (!messages) return;
 
@@ -173,6 +266,7 @@ function addMessage(message, sender) {
 
     const label = document.createElement("span");
     label.className = "chat-label";
+
     label.textContent =
         sender === "user" ? "YOU" : "AS INFINITY AI";
 
@@ -186,52 +280,189 @@ function addMessage(message, sender) {
     messages.scrollTop = messages.scrollHeight;
 }
 
-// Open chat
+
+// RENDER HISTORY
+
+function renderHistory() {
+
+    const historyBox = document.querySelector("#chatHistory");
+    if (!historyBox) return;
+
+    historyBox.innerHTML = "";
+
+    if (chats.length === 0) {
+        historyBox.innerHTML =
+            '<div class="empty-history">No previous conversations</div>';
+        return;
+    }
+
+    chats.forEach(chat => {
+
+        const item = document.createElement("button");
+
+        item.className = "history-item" +
+            (chat.id === activeChatId ? " active" : "");
+
+        item.textContent = chat.title || "New Conversation";
+
+        item.addEventListener("click", () => {
+
+            activeChatId = chat.id;
+
+            saveChats();
+            openChat();
+
+        });
+
+        historyBox.appendChild(item);
+
+    });
+
+}
+
+
+// RENDER CURRENT CHAT
+
+function renderMessages() {
+
+    const messages = document.querySelector("#chatMessages");
+    if (!messages) return;
+
+    messages.innerHTML = "";
+
+    const chat = getActiveChat();
+
+    if (!chat || chat.messages.length === 0) {
+
+        addMessage(
+            "Hello! Welcome to AS INFINITY AI. 💗\nHow can I help you today?",
+            "ai"
+        );
+
+        return;
+    }
+
+    chat.messages.forEach(message => {
+
+        addMessage(message.content, message.role);
+
+    });
+
+}
+
+
+// OPEN CHAT
+
 function openChat() {
+
+    if (!getActiveChat()) {
+        createChat();
+    }
+
     main.innerHTML = `
+
         <section class="ai-chat-page">
 
-            <button class="back-home">← Back to Home</button>
+            <div class="chat-topbar">
+
+                <button class="back-home">
+                    ← Home
+                </button>
+
+                <button class="new-chat-btn" id="newChatBtn">
+                    + New Chat
+                </button>
+
+            </div>
 
             <div class="chat-heading">
+
                 <div style="font-size:45px;color:#ff3d9a;">∞</div>
+
                 <h2>AS INFINITY AI</h2>
+
                 <p>Your space to think, learn and create.</p>
+
             </div>
 
-            <div class="chat-messages" id="chatMessages">
-                <div class="chat-message ai-message">
-                    <span class="chat-label">AS INFINITY AI</span>
-                    Hello! Welcome to AS INFINITY AI.
-                    How can I help you today?
-                </div>
-            </div>
+            <div class="chat-history" id="chatHistory"></div>
+
+            <div class="chat-messages" id="chatMessages"></div>
 
             <div class="chat-composer">
+
                 <input
                     id="aiMessageInput"
                     type="text"
                     maxlength="4000"
                     placeholder="Message AS INFINITY AI..."
                 >
+
                 <button id="aiSendButton">➤</button>
+
             </div>
 
         </section>
+
     `;
 
     document.querySelector(".back-home")
         .addEventListener("click", showHome);
 
+    document.querySelector("#newChatBtn")
+        .addEventListener("click", () => {
+
+            createChat();
+            openChat();
+
+            notify("New conversation started!");
+
+        });
+
+    renderHistory();
+    renderMessages();
+
     const input = document.querySelector("#aiMessageInput");
     const button = document.querySelector("#aiSendButton");
 
+
+    // SEND MESSAGE
+
     async function sendChat() {
+
         const message = input.value.trim();
 
         if (!message || button.disabled) return;
 
+        const chat = getActiveChat();
+
+        if (!chat) return;
+
+        const previousHistory = chat.messages.map(item => ({
+            role: item.role,
+            content: item.content
+        }));
+
+        chat.messages.push({
+            role: "user",
+            content: message
+        });
+
+        if (chat.messages.length === 1) {
+
+            chat.title = message.length > 30
+                ? message.substring(0, 30) + "..."
+                : message;
+
+        }
+
+        chat.updated = Date.now();
+
+        saveChats();
+
         addMessage(message, "user");
+
+        renderHistory();
 
         input.value = "";
         button.disabled = true;
@@ -239,22 +470,33 @@ function openChat() {
         const messages = document.querySelector("#chatMessages");
 
         const typing = document.createElement("div");
+
         typing.className = "typing";
         typing.textContent = "AS INFINITY AI is thinking...";
+
         messages.appendChild(typing);
 
         messages.scrollTop = messages.scrollHeight;
 
+
         try {
+
             const response = await fetch(API_URL, {
+
                 method: "POST",
+
                 headers: {
                     "Content-Type": "application/json"
                 },
+
                 body: JSON.stringify({
+
                     message: message,
-                    history: chatHistory.slice(-10)
+
+                    history: previousHistory.slice(-10)
+
                 })
+
             });
 
             const data = await response.json();
@@ -263,14 +505,21 @@ function openChat() {
                 throw new Error(data.error || "AI request failed");
             }
 
-            chatHistory.push(
-                { role: "user", content: message },
-                { role: "assistant", content: data.reply }
-            );
+            chat.messages.push({
+
+                role: "assistant",
+                content: data.reply
+
+            });
+
+            chat.updated = Date.now();
+
+            saveChats();
 
             addMessage(data.reply, "ai");
 
         } catch (error) {
+
             console.error("AI Error:", error);
 
             addMessage(
@@ -279,41 +528,72 @@ function openChat() {
             );
 
         } finally {
+
             typing.remove();
+
             button.disabled = false;
+
             input.focus();
+
         }
+
     }
+
 
     button.addEventListener("click", sendChat);
 
     input.addEventListener("keydown", event => {
-        if (event.key === "Enter") sendChat();
+
+        if (event.key === "Enter") {
+            sendChat();
+        }
+
     });
 
     input.focus();
+
 }
 
-// Homepage
+
+// HOMEPAGE
+
 function showHome() {
+
     main.innerHTML = homeContent;
-    window.scrollTo({ top: 0, behavior: "smooth" });
+
+    window.scrollTo({
+        top: 0,
+        behavior: "smooth"
+    });
+
     attachHomeEvents();
+
 }
 
-// Homepage events
+
+// HOMEPAGE EVENTS
+
 function attachHomeEvents() {
+
     const input = document.querySelector(".chat-box input");
+
     const button = document.querySelector(".chat-box button");
 
     if (input && button) {
+
         button.addEventListener("click", () => {
+
             const message = input.value.trim();
 
             if (!message) {
+
                 notify("Please enter your message.");
+
                 return;
+
             }
+
+            createChat();
 
             openChat();
 
@@ -321,31 +601,53 @@ function attachHomeEvents() {
                 document.querySelector("#aiMessageInput");
 
             chatInput.value = message;
+
             document.querySelector("#aiSendButton").click();
+
         });
+
 
         input.addEventListener("keydown", event => {
-            if (event.key === "Enter") button.click();
+
+            if (event.key === "Enter") {
+                button.click();
+            }
+
         });
+
     }
 
+
     document.querySelectorAll(".feature-card").forEach(card => {
+
         card.addEventListener("click", () => {
+
             const title =
                 card.querySelector("h3")?.textContent;
 
             if (title === "AI Chat") {
+
                 openChat();
+
             } else {
+
                 notify(title + " module is under development.");
+
             }
+
         });
+
     });
+
 }
 
-// Navigation
+
+// NAVIGATION
+
 navLinks.forEach(link => {
+
     link.addEventListener("click", event => {
+
         event.preventDefault();
 
         navLinks.forEach(item =>
@@ -354,17 +656,27 @@ navLinks.forEach(link => {
 
         link.classList.add("active");
 
-        const name = link.querySelector("span")?.textContent;
+        const name =
+            link.querySelector("span")?.textContent;
 
         if (name === "Home") {
+
             showHome();
+
         } else if (name === "AI Chat") {
+
             openChat();
+
         } else {
+
             notify(name + " module is under development.");
+
         }
+
     });
+
 });
+
 
 attachHomeEvents();
 
