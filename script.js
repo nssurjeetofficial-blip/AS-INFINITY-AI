@@ -922,188 +922,104 @@ html, body {
 
         }
 
-
+                // FEATURE CARDS
         document.querySelectorAll(".feature-card").forEach(card => {
 
             card.addEventListener("click", () => {
+                const title = card.querySelector("h3")?.textContent?.trim();
 
-                const title =
-                    card.querySelector("h3")?.textContent;
+                if (title) {
+                    notify(title + " feature is coming soon!");
+                }
+            });
 
-                if (title === "AI Chat") {
+        });
 
-                    openChat();
+    }
 
-                } else {
 
-                    notify(title + " module is under development.");
+    // ========================================
+    // SIDEBAR COLLAPSE SYSTEM
+    // ========================================
 
+    const app = document.querySelector(".app");
+    const toggleButton = document.querySelector("#sidebarToggle");
+    const mobile = window.matchMedia("(max-width: 650px)");
+
+    function updateButton() {
+
+        if (!toggleButton) return;
+
+        toggleButton.textContent =
+            sidebar.classList.contains("mobile-open") ? "✕" : "☰";
+    }
+
+    if (app && sidebar && toggleButton) {
+
+        toggleButton.addEventListener("click", () => {
+
+            if (mobile.matches) {
+
+                sidebar.classList.toggle("mobile-open");
+
+            } else {
+
+                app.classList.toggle("sidebar-collapsed");
+
+                localStorage.setItem(
+                    "as_sidebar_collapsed",
+                    app.classList.contains("sidebar-collapsed")
+                );
+
+            }
+
+            updateButton();
+
+        });
+
+        // Restore desktop sidebar state
+        if (!mobile.matches &&
+            localStorage.getItem("as_sidebar_collapsed") === "true") {
+
+            app.classList.add("sidebar-collapsed");
+
+        }
+
+        sidebar.querySelectorAll("nav a").forEach(link => {
+
+            link.addEventListener("click", () => {
+
+                if (mobile.matches) {
+                    sidebar.classList.remove("mobile-open");
+                    updateButton();
                 }
 
             });
 
         });
 
-    }
+        document.addEventListener("keydown", event => {
 
-
-    // ========================================
-    // NAVIGATION
-    // ========================================
-
-    const navLinks = document.querySelectorAll("nav a");
-
-    navLinks.forEach(link => {
-
-        link.addEventListener("click", event => {
-
-            event.preventDefault();
-
-            navLinks.forEach(item => {
-                item.classList.remove("active");
-            });
-
-            link.classList.add("active");
-
-            const name =
-                link.querySelector("span")?.textContent?.trim();
-
-            if (name === "Home") {
-
-                showHome();
-
-            } else if (name === "AI Chat") {
-
-                openChat();
-
-            } else {
-
-                notify(name + " module is under development.");
-
+            if (event.key === "Escape") {
+                sidebar.classList.remove("mobile-open");
+                updateButton();
             }
-
-            closeMobileSidebar();
 
         });
 
-    });
+        mobile.addEventListener("change", () => {
 
+            sidebar.classList.remove("mobile-open");
+            updateButton();
 
-    // ========================================
+        });
+
+        updateButton();
+
+    }
+
     // INITIALIZE
-    // ========================================
-
     attachHomeEvents();
-
     renderSidebarHistory();
 
 });
-
-
-// ========================================
-// SIDEBAR CONTROL
-// ========================================
-
-(() => {
-
-    const app = document.querySelector(".app");
-
-    const sidebar = document.querySelector(".sidebar");
-
-    const toggle = document.getElementById("sidebarToggle");
-
-    if (!app || !sidebar || !toggle) return;
-
-    const mobile = window.matchMedia("(max-width: 650px)");
-
-    if (!mobile.matches) {
-
-        const savedState =
-            localStorage.getItem("as_sidebar_collapsed");
-
-        if (savedState === "true") {
-
-            app.classList.add("sidebar-collapsed");
-
-        }
-
-    }
-
-
-    function updateButton() {
-
-        const isOpen = mobile.matches
-            ? sidebar.classList.contains("mobile-open")
-            : !app.classList.contains("sidebar-collapsed");
-
-        toggle.setAttribute("aria-expanded", String(isOpen));
-
-    }
-
-
-    toggle.addEventListener("click", () => {
-
-        if (mobile.matches) {
-
-            sidebar.classList.toggle("mobile-open");
-
-        } else {
-
-            app.classList.toggle("sidebar-collapsed");
-
-            localStorage.setItem(
-                "as_sidebar_collapsed",
-                app.classList.contains("sidebar-collapsed")
-            );
-
-        }
-
-        updateButton();
-
-    });
-
-
-    sidebar.querySelectorAll("nav a").forEach(link => {
-
-        link.addEventListener("click", () => {
-
-            if (mobile.matches) {
-
-                sidebar.classList.remove("mobile-open");
-
-                updateButton();
-
-            }
-
-        });
-
-    });
-
-
-    document.addEventListener("keydown", event => {
-
-        if (event.key === "Escape") {
-
-            sidebar.classList.remove("mobile-open");
-
-            updateButton();
-
-        }
-
-    });
-
-
-    mobile.addEventListener("change", () => {
-
-        sidebar.classList.remove("mobile-open");
-
-        updateButton();
-
-    });
-
-
-    updateButton();
-
-})();
-
-   
