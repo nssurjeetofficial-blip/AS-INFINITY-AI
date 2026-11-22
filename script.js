@@ -60,8 +60,9 @@ function saveMemories(memories) {
     // ======================================
 
     let chats = loadChats();
-    let activeChatId = null;
-
+let memories = loadMemories();
+let activeChatId = null;
+    
     let homeContent = main
         ? main.innerHTML
         : "";
