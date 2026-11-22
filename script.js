@@ -526,15 +526,13 @@ document.addEventListener("DOMContentLoaded", () => {
         document.querySelector("#backHomeBtn")
             .addEventListener("click", showHome);
 
-        document.querySelector("#newChatBtn")
-            .addEventListener("click", () => {
-
-                createChat();
-                openChat();
-
-                notify("New conversation started!");
-
-            });
+        document.querySelector("#chatMenuBtn")
+.addEventListener("click", () => {
+    createChat();
+    openChat();
+    notify("New conversation started!");
+});
+        
 
         renderMessages();
         renderSidebarHistory();
