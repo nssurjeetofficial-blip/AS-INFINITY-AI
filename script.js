@@ -909,4 +909,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
     mobile.addEventListener("change", () => {
 
+        sidebar.classList.remove("mobile-open");
+
+        updateButton();
+
+    });
+
+
+    updateButton();
+
+})();
+
    
