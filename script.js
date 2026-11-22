@@ -681,3 +681,74 @@ navLinks.forEach(link => {
 attachHomeEvents();
 
 });
+/* =================================
+   AS INFINITY AI - SIDEBAR CONTROL
+================================= */
+
+(() => {
+    const app = document.querySelector(".app");
+    const sidebar = document.querySelector(".sidebar");
+    const toggle = document.getElementById("sidebarToggle");
+
+    if (!app || !sidebar || !toggle) return;
+
+    const mobile = window.matchMedia("(max-width: 650px)");
+
+    // Restore desktop sidebar preference
+    if (!mobile.matches) {
+        const savedState = localStorage.getItem("as_sidebar_collapsed");
+
+        if (savedState === "true") {
+            app.classList.add("sidebar-collapsed");
+        }
+    }
+
+    function updateButton() {
+        const isOpen = mobile.matches
+            ? sidebar.classList.contains("mobile-open")
+            : !app.classList.contains("sidebar-collapsed");
+
+        toggle.setAttribute("aria-expanded", String(isOpen));
+    }
+
+    toggle.addEventListener("click", () => {
+        if (mobile.matches) {
+            sidebar.classList.toggle("mobile-open");
+        } else {
+            app.classList.toggle("sidebar-collapsed");
+
+            localStorage.setItem(
+                "as_sidebar_collapsed",
+                app.classList.contains("sidebar-collapsed")
+            );
+        }
+
+        updateButton();
+    });
+
+    // Close mobile sidebar after selecting navigation
+    sidebar.querySelectorAll("nav a").forEach(link => {
+        link.addEventListener("click", () => {
+            if (mobile.matches) {
+                sidebar.classList.remove("mobile-open");
+                updateButton();
+            }
+        });
+    });
+
+    // Close mobile sidebar with Escape
+    document.addEventListener("keydown", event => {
+        if (event.key === "Escape") {
+            sidebar.classList.remove("mobile-open");
+            updateButton();
+        }
+    });
+
+    // Reset mobile state when screen size changes
+    mobile.addEventListener("change", () => {
+        sidebar.classList.remove("mobile-open");
+        updateButton();
+    });
+
+    updateButton();
+})();
