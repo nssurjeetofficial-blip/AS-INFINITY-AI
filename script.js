@@ -377,13 +377,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const chat = getActiveChat();
 
         if (!chat || chat.messages.length === 0) {
-
-            addMessage(
-                "Hello! Welcome to AS INFINITY AI. 💗\nHow can I help you today?",
-                "ai"
-            );
-
-            return;
+    return;
         }
 
         chat.messages.forEach(message => {
