@@ -120,8 +120,8 @@ document.addEventListener("DOMContentLoaded", () => {
         history.querySelectorAll("[data-open-chat]").forEach(button => {
             button.addEventListener("click", () => {
                 activeChatId = button.dataset.openChat;
-                openChat();
-                closeMobileSidebar();
+closeMobileSidebar();
+openChat();
             });
         });
 
