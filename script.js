@@ -778,13 +778,13 @@ html, body {
                     "ai"
                 );
 
-            } finally {
+            }finally {
 
-                typing.remove();
+                     typing.remove();
 
-                button.disabled = false;
+                      button.disabled = false;
 
-                input.focus();
+            }
 
             }
 
