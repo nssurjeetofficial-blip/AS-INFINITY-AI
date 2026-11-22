@@ -427,9 +427,11 @@ let activeChatId = null;
                     },
 
                     body: JSON.stringify({
-                        message: message,
-                        history: history
-                    })
+    message: message,
+    history: history,
+    memories: memories
+})
+                    
 
                 });
 
