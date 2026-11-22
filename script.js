@@ -264,6 +264,26 @@ document.addEventListener("DOMContentLoaded", () => {
             }
 
         }
+        #chatMessages {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    width: 100% !important;
+}
+
+#chatMessages .user-message {
+    align-self: flex-end !important;
+    margin-left: auto !important;
+    margin-right: 0 !important;
+    text-align: left !important;
+}
+
+#chatMessages .ai-message {
+    align-self: flex-start !important;
+    margin-right: auto !important;
+    margin-left: 0 !important;
+    text-align: left !important;
+}
 
     `;
 
