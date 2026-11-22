@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AS INFINITY AI | Account</title>
+
+<style>
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background: #080808;
+    color: white;
+    font-family: Arial, sans-serif;
+}
+
+.card {
+    width: 100%;
+    max-width: 420px;
+    padding: 35px 25px;
+    border: 1px solid #ff4fa3;
+    border-radius: 22px;
+    background: #111;
+    box-shadow: 0 0 30px #ff4fa322;
+}
+
+.logo {
+    text-align: center;
+    color: #ff4fa3;
+    font-size: 25px;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+.tagline {
+    text-align: center;
+    color: #aaa;
+    font-size: 13px;
+    margin-bottom: 30px;
+}
+
+h2 {
+    text-align: center;
+    margin-bottom: 22px;
+}
+
+input {
+    width: 100%;
+    padding: 15px;
+    margin-bottom: 15px;
+    border: 1px solid #333;
+    border-radius: 10px;
+    outline: none;
+    background: #1b1b1b;
+    color: white;
+    font-size: 15px;
+}
+
+input:focus {
+    border-color: #ff4fa3;
+}
+
+button {
+    width: 100%;
+    padding: 15px;
+    border: none;
+    border-radius: 10px;
+    background: linear-gradient(90deg, #ff4fa3, #ff83bd);
+    color: #111;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.switch {
+    margin-top: 22px;
+    text-align: center;
+    color: #aaa;
+    font-size: 14px;
+}
+
+.switch span {
+    color: #ff65ac;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+#message {
+    text-align: center;
+    font-size: 13px;
+    margin-top: 18px;
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+}
+
+.back {
+    display: block;
+    text-align: center;
+    margin-top: 25px;
+    color: #aaa;
+    text-decoration: none;
+    font-size: 13px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="card">
+
+    <div class="logo">AS INFINITY AI</div>
+    <div class="tagline">Intelligence Without Limits.</div>
+
+    <h2 id="heading">Welcome Back</h2>
+
+    <form id="authForm">
+        <input
+            type="email"
+            id="email"
+            placeholder="Email address"
+            autocomplete="email"
+            required
+        >
+
+        <input
+            type="password"
+            id="password"
+            placeholder="Password (minimum 8 characters)"
+            autocomplete="current-password"
+            minlength="8"
+            required
+        >
+
+        <button type="submit" id="submitBtn">
+            Login
+        </button>
+    </form>
+
+    <div class="switch">
+        <span id="switchText">New here? Create an account</span>
+    </div>
+
+    <div id="message" role="status"></div>
+
+    <a href="index.html" class="back">← Back to Home</a>
+
+</div>
+
+<script type="module">
+import { signUp, login } from "./js/auth.js";
+
+const form = document.getElementById("authForm");
+const heading = document.getElementById("heading");
+const button = document.getElementById("submitBtn");
+const switchText = document.getElementById("switchText");
+const message = document.getElementById("message");
+const password = document.getElementById("password");
+
+let isLogin = true;
+
+switchText.addEventListener("click", () => {
+    isLogin = !isLogin;
+
+    heading.textContent = isLogin ? "Welcome Back" : "Create Account";
+    button.textContent = isLogin ? "Login" : "Sign Up";
+    password.autocomplete = isLogin ? "current-password" : "new-password";
+
+    switchText.textContent = isLogin
+        ? "New here? Create an account"
+        : "Already registered? Login";
+
+    message.textContent = "";
+});
+
+form.addEventListener("submit", async (event) => {
+    event.preventDefault();
+
+    const email = document.getElementById("email").value.trim();
+    const pass = password.value;
+
+    button.disabled = true;
+    button.textContent = "Please wait...";
+    message.textContent = "";
+
+    try {
+        if (isLogin) {
+            await login(email, pass);
+            message.textContent = "Login successful! Opening AS INFINITY AI...";
+
+            setTimeout(() => {
+                window.location.href = "index.html";
+            }, 700);
+
+        } else {
+            const data = await signUp(email, pass);
+
+            if (data.session) {
+                message.textContent = "Account created successfully!";
+
+                setTimeout(() => {
+                    window.location.href = "index.html";
+                }, 1000);
+            } else {
+                message.textContent =
+                    "Account created! Please verify your email, then login.";
+            }
+        }
+
+    } catch (error) {
+        message.textContent = error.message || "Something went wrong.";
+    } finally {
+        button.disabled = false;
+        button.textContent = isLogin ? "Login" : "Sign Up";
+    }
+});
+</script>
+
+</body>
+  </html>
