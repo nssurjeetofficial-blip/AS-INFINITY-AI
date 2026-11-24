@@ -4,7 +4,8 @@ import {
     loadChats,
     saveChats,
     loadMemories,
-    saveMemories
+    saveMemories,
+    setStorageUser
 } from "./storage.js";
 
 export async function syncAll() {
