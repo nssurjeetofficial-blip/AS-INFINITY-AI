@@ -444,7 +444,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                 role: "assistant",
                 content: String(reply)
             });
-
+            speakAI(reply);
             chat.updated = Date.now();
 
             saveData();
