@@ -20,6 +20,19 @@ export async function syncAll() {
 
     return true;
 }
+export async function syncChatsOnly() {
+    const user = await getCurrentUser();
+
+    if (!user) {
+        throw new Error("Please login first.");
+    }
+
+    setStorageUser(user.id);
+
+    await syncChats(user.id);
+
+    return true;
+}
 
 // ==============================
 // CHAT CLOUD SYNC
