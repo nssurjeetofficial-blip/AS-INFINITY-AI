@@ -3,6 +3,16 @@ import {
     saveMemories
 } from "./storage.js";
 
+import { syncMemoriesToCloud } from "./cloud-sync.js";
+
+function saveAndSync(memories) {
+    saveMemories(memories);
+
+    syncMemoriesToCloud(memories).catch(error => {
+        console.error("Memory Cloud Sync Error:", error);
+    });
+}
+
 export function getMemories() {
     return loadMemories();
 }
@@ -10,16 +20,14 @@ export function getMemories() {
 export function addMemory(memory) {
     const memories = loadMemories();
 
-    if (memories.length >= 12) {
-        return false;
-    }
+    if (memories.length >= 12) return false;
 
     const value = memory.trim();
 
     if (!value) return false;
 
     memories.push(value);
-    saveMemories(memories);
+    saveAndSync(memories);
 
     return true;
 }
@@ -28,12 +36,16 @@ export function editMemory(index, newValue) {
     const memories = loadMemories();
     const value = newValue.trim();
 
-    if (!memories[index] || !value) {
+    if (
+        index < 0 ||
+        index >= memories.length ||
+        !value
+    ) {
         return false;
     }
 
     memories[index] = value;
-    saveMemories(memories);
+    saveAndSync(memories);
 
     return true;
 }
@@ -46,7 +58,7 @@ export function deleteMemory(index) {
     }
 
     memories.splice(index, 1);
-    saveMemories(memories);
+    saveAndSync(memories);
 
     return true;
 }
