@@ -572,7 +572,12 @@ micButton.innerHTML = `
 // Voice Output Toggle
 
 const voiceToggle = document.createElement("button");
+// Add microphone to chat input
+chatBox.insertBefore(micButton, sendButton);
 
+// Activate voice recording
+setupVoiceInput(input, micButton);
+    
 voiceToggle.type = "button";
 voiceToggle.textContent = "🔇 Voice OFF";
 
