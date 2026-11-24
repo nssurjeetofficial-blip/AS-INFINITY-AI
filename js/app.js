@@ -3,7 +3,10 @@ import {
     syncChatsOnly
 } from "./cloud-sync.js";
 
-import { loadChats, saveChats } from "./storage.js";
+import {
+    loadChats,
+    saveChats
+} from "./storage.js";
 
 import {
     getMemories,
@@ -13,12 +16,26 @@ import {
 } from "./memory.js";
 
 import { sendToAI } from "./chat.js";
-
 import { renderSidebarHistory } from "./sidebar.js";
 
 document.addEventListener("DOMContentLoaded", async () => {
+
     // =================================
-    // 1. HTML ELEMENTS
+    // 1. CATEGORY
+    // =================================
+
+    const activeCategory =
+        new URLSearchParams(window.location.search).get("category") || "friend";
+
+    const allowedCategories = ["medical", "study", "friend"];
+
+    if (!allowedCategories.includes(activeCategory)) {
+        window.location.replace("dashboard.html");
+        return;
+    }
+
+    // =================================
+    // 2. HTML ELEMENTS
     // =================================
 
     const app = document.querySelector(".app");
@@ -29,77 +46,15 @@ document.addEventListener("DOMContentLoaded", async () => {
     const homeScreen = document.querySelector(".home-screen");
     const homeCenter = document.querySelector(".home-center");
 
-    // SPECIALIST HEADER
-const specialistInfo = {
-    medical: {
-        icon: "🏥",
-        name: "AS MEDICAL AI",
-        subtitle: "Your Healthcare Assistant"
-    },
-    study: {
-        icon: "🎓",
-        name: "AS STUDY AI",
-        subtitle: "Your Smart Learning Partner"
-    },
-    friend: {
-        icon: "❤️",
-        name: "AS FRIEND AI",
-        subtitle: "Your Friendly Companion"
-    }
-};
-
-const currentSpecialist =
-    specialistInfo[activeCategory] || specialistInfo.friend;
-
-const specialistHeader = document.createElement("div");
-
-specialistHeader.style.cssText = `
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-    padding: 14px 18px;
-    margin: 12px 16px;
-    background: rgba(255, 63, 164, 0.08);
-    border: 1px solid rgba(255, 63, 164, 0.25);
-    border-radius: 16px;
-`;
-
-specialistHeader.innerHTML = `
-    <div>
-        <div style="font-size:17px;font-weight:700;color:white;">
-            ${currentSpecialist.icon} ${currentSpecialist.name}
-        </div>
-        <div style="font-size:12px;color:#c5aebe;margin-top:4px;">
-            ${currentSpecialist.subtitle}
-        </div>
-    </div>
-    <button id="switchSpecialist"
-        style="background:#ff3fa4;color:white;border:0;
-        padding:10px 13px;border-radius:10px;font-weight:600;">
-        Switch AI
-    </button>
-`;
-
-homeScreen.prepend(specialistHeader);
-
-specialistHeader.querySelector("#switchSpecialist")
-    .addEventListener("click", () => {
-        window.location.href = "dashboard.html";
-    });
-
-    
     const chatBox = document.querySelector(".chat-box");
     const input = chatBox?.querySelector("input");
     const sendButton = chatBox?.querySelector("button");
 
     const topbarRight = document.querySelector(".topbar-right");
-
     const newChatButton = document.querySelector(".new-chat-btn");
 
-    const historyContainer = document.querySelector(
-        "#sidebarChatHistory"
-    );
+    const historyContainer =
+        document.querySelector("#sidebarChatHistory");
 
     if (
         !app ||
@@ -112,69 +67,134 @@ specialistHeader.querySelector("#switchSpecialist")
         !sendButton ||
         !topbarRight ||
         !newChatButton ||
-        !historyContainer
+        !historyContainer ||
+        !sidebarToggle
     ) {
         console.error("AS INFINITY AI: Required HTML element missing.");
         return;
     }
 
     // =================================
-// 2. CHAT DATA
-// =================================
+    // 3. SPECIALIST HEADER
+    // =================================
 
-const activeCategory =
-    new URLSearchParams(window.location.search).get("category") || "friend";
-// INITIAL CLOUD SYNC
-try {
-    await syncAll();
-    console.log("AS INFINITY AI Cloud Sync Successful");
-} catch (error) {
-    console.error("Cloud Sync Error:", error);
-}
-    
-let chats = loadChats();
+    const specialistInfo = {
+        medical: {
+            icon: "🏥",
+            name: "AS MEDICAL AI",
+            subtitle: "Your Healthcare Assistant"
+        },
 
-chats = chats.map(chat => ({
-const chat = {
-    id: crypto.randomUUID(),
-    title: "New Chat",
-    messages: [],
-    category: activeCategory,
-    updated: Date.now()
-};
+        study: {
+            icon: "🎓",
+            name: "AS STUDY AI",
+            subtitle: "Your Smart Learning Partner"
+        },
 
-// Preserve existing chats.
-// Old chats without a category are assigned to Friend AI.
-saveChats(chats);
-
-let activeChatId = null;
-let isSending = false;
-
-function getActiveChat() {
-    return chats.find(chat => chat.id === activeChatId);
-}
-
-let cloudSyncTimer;
-
-function saveData() {
-    saveChats(chats);
-
-    clearTimeout(cloudSyncTimer);
-
-    cloudSyncTimer = setTimeout(async () => {
-        try {
-            await syncChatsOnly();
-            console.log("Cloud Sync Successful");
-        } catch (error) {
-            console.error("Cloud Sync Error:", error);
+        friend: {
+            icon: "❤️",
+            name: "AS FRIEND AI",
+            subtitle: "Your Friendly Companion"
         }
-    }, 1000);
-}
-    
-    
+    };
+
+    const currentSpecialist = specialistInfo[activeCategory];
+
+    const specialistHeader = document.createElement("div");
+
+    specialistHeader.style.cssText = `
+        display:flex;
+        align-items:center;
+        justify-content:space-between;
+        gap:12px;
+        padding:14px 18px;
+        margin:12px 16px;
+        background:rgba(255,63,164,.08);
+        border:1px solid rgba(255,63,164,.25);
+        border-radius:16px;
+    `;
+
+    specialistHeader.innerHTML = `
+        <div>
+            <div style="font-size:17px;font-weight:700;color:white;">
+                ${currentSpecialist.icon} ${currentSpecialist.name}
+            </div>
+
+            <div style="font-size:12px;color:#c5aebe;margin-top:4px;">
+                ${currentSpecialist.subtitle}
+            </div>
+        </div>
+
+        <button id="switchSpecialist"
+            style="background:#ff3fa4;color:white;border:0;
+            padding:10px 13px;border-radius:10px;font-weight:600;">
+            Switch AI
+        </button>
+    `;
+
+    homeScreen.prepend(specialistHeader);
+
+    specialistHeader
+        .querySelector("#switchSpecialist")
+        .addEventListener("click", () => {
+            window.location.href = "dashboard.html";
+        });
 
     // =================================
-    // 3. MESSAGE CONTAINER
+    // 4. INITIAL CLOUD SYNC
+    // =================================
+
+    try {
+        await syncAll();
+        console.log("AS INFINITY AI Cloud Sync Successful");
+    } catch (error) {
+        console.error("Cloud Sync Error:", error);
+    }
+
+    // =================================
+    // 5. CHAT DATA
+    // =================================
+
+    let chats = loadChats();
+
+    chats = chats.map(chat => ({
+        ...chat,
+        id: chat.id || crypto.randomUUID(),
+        title: chat.title || "New Chat",
+        messages: Array.isArray(chat.messages)
+            ? chat.messages
+            : [],
+        category: chat.category || "friend",
+        updated: chat.updated || Date.now()
+    }));
+
+    saveChats(chats);
+
+    let activeChatId = null;
+    let isSending = false;
+    let cloudSyncTimer;
+
+    function getActiveChat() {
+        return chats.find(chat => chat.id === activeChatId);
+    }
+
+    function saveData() {
+        saveChats(chats);
+
+        clearTimeout(cloudSyncTimer);
+
+        cloudSyncTimer = setTimeout(async () => {
+            try {
+                await syncChatsOnly();
+                console.log("Chat Cloud Sync Successful");
+            } catch (error) {
+                console.error("Chat Cloud Sync Error:", error);
+            }
+        }, 1000);
+    }
+
+    // =================================
+    // 6. MESSAGE CONTAINER
     // =================================
 
     const messageContainer = document.createElement("div");
@@ -198,15 +218,13 @@ function saveData() {
     homeScreen.insertBefore(messageContainer, chatBox);
 
     // =================================
-    // 4. RENDER MESSAGES
+    // 7. RENDER MESSAGES
     // =================================
 
     function renderMessages(messages) {
-
         messageContainer.replaceChildren();
 
         messages.forEach(message => {
-
             const row = document.createElement("div");
 
             row.style.cssText = `
@@ -257,11 +275,9 @@ function saveData() {
     }
 
     function showLoading() {
-
         const loading = document.createElement("div");
 
         loading.id = "aiLoading";
-
         loading.textContent =
             "∞ AS INFINITY AI is thinking...";
 
@@ -284,68 +300,61 @@ function saveData() {
     }
 
     // =================================
-    // 5. SIDEBAR HISTORY
+    // 8. SIDEBAR HISTORY
     // =================================
 
     function updateSidebar() {
-    renderSidebarHistory(
-        chats.filter(chat => chat.category === activeCategory),
-        activeChatId,
-        openChat
-    );
+        renderSidebarHistory(
+            chats.filter(chat =>
+                chat.category === activeCategory
+            ),
+            activeChatId,
+            openChat
+        );
     }
 
     // =================================
-    // 6. OPEN CHAT
+    // 9. OPEN CHAT
     // =================================
 
     function renderChat() {
-
         const chat = getActiveChat();
 
         if (!chat) return;
 
         homeCenter.style.display = "none";
-
         messageContainer.style.display = "flex";
 
         renderMessages(chat.messages);
     }
 
     function openChat(id) {
+        const chat = chats.find(item => item.id === id);
 
+        if (!chat || chat.category !== activeCategory) {
+            return;
+        }
 
-        const selectedChat = chats.find(chat => chat.id === id);
+        activeChatId = id;
 
-if (!selectedChat || selectedChat.category !== activeCategory) return;
-        
-    const chat = chats.find(item => item.id === id);
+        renderChat();
+        updateSidebar();
 
-    if (!chat) return;
+        if (window.innerWidth <= 650) {
+            sidebar.classList.remove("mobile-open");
+        }
 
-    activeChatId = id;
-
-    renderChat();
-    updateSidebar();
-
-    // Automatically close mobile sidebar
-    if (window.innerWidth <= 650) {
-        sidebar.classList.remove("mobile-open");
-    }
-
-    input.focus();
+        input.focus();
     }
 
     // =================================
-    // 7. NEW CHAT
+    // 10. NEW CHAT
     // =================================
 
     function newChat() {
-
         activeChatId = null;
 
         homeCenter.style.display = "";
-
         messageContainer.style.display = "none";
 
         messageContainer.replaceChildren();
@@ -353,16 +362,15 @@ if (!selectedChat || selectedChat.category !== activeCategory) return;
         input.value = "";
 
         updateSidebar();
-
         input.focus();
     }
 
     function createChat() {
-
         const chat = {
             id: crypto.randomUUID(),
             title: "New Chat",
             messages: [],
+            category: activeCategory,
             updated: Date.now()
         };
 
@@ -377,11 +385,10 @@ if (!selectedChat || selectedChat.category !== activeCategory) return;
     }
 
     // =================================
-    // 8. SEND MESSAGE
+    // 11. SEND MESSAGE
     // =================================
 
     async function sendMessage() {
-
         const message = input.value.trim();
 
         if (!message || isSending) return;
@@ -415,23 +422,16 @@ if (!selectedChat || selectedChat.category !== activeCategory) return;
         showLoading();
 
         try {
-
             const history = chat.messages.slice(0, -1);
 
-            const category = new URLSearchParams(window.location.search)
-    .get("category") || "friend";
+            const reply = await sendToAI(
+                message,
+                history,
+                getMemories(),
+                activeCategory
+            );
 
-const reply = await sendToAI(
-    message,
-    history,
-    getMemories(),
-    category
-);
-
-            const loading =
-                document.querySelector("#aiLoading");
-
-            loading?.remove();
+            document.querySelector("#aiLoading")?.remove();
 
             chat.messages.push({
                 role: "assistant",
@@ -445,7 +445,6 @@ const reply = await sendToAI(
             updateSidebar();
 
         } catch (error) {
-
             document.querySelector("#aiLoading")?.remove();
 
             console.error("AI ERROR:", error);
@@ -456,59 +455,50 @@ const reply = await sendToAI(
                     "Sorry, I couldn't connect right now. Please try again."
             });
 
+            chat.updated = Date.now();
+
             saveData();
             renderChat();
 
         } finally {
-
             isSending = false;
             sendButton.disabled = false;
-
             input.focus();
         }
     }
 
     // =================================
-    // 9. SEND BUTTON
+    // 12. SEND BUTTON
     // =================================
 
     sendButton.addEventListener("click", sendMessage);
 
     input.addEventListener("keydown", event => {
-
         if (event.key === "Enter") {
-
             event.preventDefault();
-
             sendMessage();
         }
     });
 
     // =================================
-    // 10. NEW CHAT BUTTON
+    // 13. NEW CHAT BUTTON
     // =================================
 
     newChatButton.removeAttribute("onclick");
 
     newChatButton.addEventListener("click", event => {
-
         event.preventDefault();
-
         newChat();
     });
 
     // =================================
-    // 11. SIDEBAR TOGGLE
+    // 14. SIDEBAR TOGGLE
     // =================================
 
     sidebarToggle.addEventListener("click", () => {
-
         if (window.innerWidth <= 650) {
-
             sidebar.classList.toggle("mobile-open");
-
         } else {
-
             app.classList.toggle("sidebar-collapsed");
         }
 
@@ -522,13 +512,12 @@ const reply = await sendToAI(
     });
 
     // =================================
-    // 12. MEMORY BUTTON
+    // 15. MEMORY BUTTON
     // =================================
 
     const memoryButton = document.createElement("button");
 
     memoryButton.type = "button";
-
     memoryButton.textContent = "♡ Memory";
 
     memoryButton.style.cssText = `
@@ -550,11 +539,10 @@ const reply = await sendToAI(
     );
 
     // =================================
-    // 13. MEMORY MANAGER
+    // 16. MEMORY MANAGER
     // =================================
 
     function openMemoryManager() {
-
         const overlay = document.createElement("div");
 
         overlay.style.cssText = `
@@ -596,7 +584,6 @@ const reply = await sendToAI(
         box.appendChild(heading);
 
         function styleButton(button) {
-
             button.type = "button";
 
             button.style.cssText = `
@@ -614,9 +601,7 @@ const reply = await sendToAI(
         }
 
         function refresh() {
-
             overlay.remove();
-
             openMemoryManager();
         }
 
@@ -625,21 +610,17 @@ const reply = await sendToAI(
         const addButton = document.createElement("button");
 
         addButton.textContent = "+ Add Memory";
-
         styleButton(addButton);
 
         addButton.onclick = () => {
-
             const value = prompt("Enter your memory:");
 
             if (value === null) return;
 
             if (!addMemory(value)) {
-
                 alert(
                     "Memory could not be saved. Check that it isn't empty and that the 12-memory limit hasn't been reached."
                 );
-
                 return;
             }
 
@@ -665,7 +646,6 @@ const reply = await sendToAI(
         box.appendChild(listHeading);
 
         if (memories.length === 0) {
-
             const empty = document.createElement("p");
 
             empty.textContent = "No memories saved yet.";
@@ -680,7 +660,6 @@ const reply = await sendToAI(
         }
 
         memories.forEach((memory, index) => {
-
             const row = document.createElement("div");
 
             row.style.cssText = `
@@ -702,19 +681,15 @@ const reply = await sendToAI(
             const edit = document.createElement("button");
 
             edit.textContent = "Edit";
-
             styleButton(edit);
 
             edit.onclick = () => {
-
                 const value = prompt("Edit memory:", memory);
 
                 if (value === null) return;
 
                 if (!editMemory(index, value)) {
-
                     alert("Memory could not be updated.");
-
                     return;
                 }
 
@@ -724,20 +699,16 @@ const reply = await sendToAI(
             const remove = document.createElement("button");
 
             remove.textContent = "Delete";
-
             styleButton(remove);
 
             remove.onclick = () => {
-
                 if (!confirm("Delete this memory?")) return;
 
                 deleteMemory(index);
-
                 refresh();
             };
 
             row.append(text, edit, remove);
-
             box.appendChild(row);
         });
 
@@ -746,11 +717,9 @@ const reply = await sendToAI(
         const nicknameButton = document.createElement("button");
 
         nicknameButton.textContent = "♡ Save My Nickname";
-
         styleButton(nicknameButton);
 
         nicknameButton.onclick = () => {
-
             const value = prompt(
                 "What nickname should AI use for you?"
             );
@@ -770,9 +739,7 @@ const reply = await sendToAI(
                 : addMemory(memory);
 
             if (!success) {
-
                 alert("Could not save nickname. Memory limit may be reached.");
-
                 return;
             }
 
@@ -784,11 +751,9 @@ const reply = await sendToAI(
         const aiNicknameButton = document.createElement("button");
 
         aiNicknameButton.textContent = "♡ Save AI Nickname";
-
         styleButton(aiNicknameButton);
 
         aiNicknameButton.onclick = () => {
-
             const value = prompt(
                 "What nickname should you use for AI?"
             );
@@ -808,21 +773,17 @@ const reply = await sendToAI(
                 : addMemory(memory);
 
             if (!success) {
-
                 alert("Could not save nickname. Memory limit may be reached.");
-
                 return;
             }
 
             refresh();
         };
-
-        // CLOSE
+// CLOSE
 
         const closeButton = document.createElement("button");
 
         closeButton.textContent = "Close";
-
         styleButton(closeButton);
 
         closeButton.onclick = () => overlay.remove();
@@ -836,7 +797,6 @@ const reply = await sendToAI(
         overlay.appendChild(box);
 
         overlay.addEventListener("click", event => {
-
             if (event.target === overlay) {
                 overlay.remove();
             }
@@ -851,15 +811,13 @@ const reply = await sendToAI(
     );
 
     // =================================
-    // 14. STARTUP
+    // 17. STARTUP
     // =================================
 
     updateSidebar();
-
     newChat();
 
-    console.log(
-        "AS INFINITY AI initialized successfully."
-    );
-
 });
+
+
+        
