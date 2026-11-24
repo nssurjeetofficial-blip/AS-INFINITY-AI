@@ -942,3 +942,19 @@ button {
         height: 21px;
     }
 }
+.mic-button.processing {
+    cursor: wait;
+    opacity: .8;
+}
+
+.mic-button .mic-spinner {
+    width: 23px;
+    height: 23px;
+    animation: micSpin .8s linear infinite;
+}
+
+@keyframes micSpin {
+    to {
+        transform: rotate(360deg);
+    }
+}
