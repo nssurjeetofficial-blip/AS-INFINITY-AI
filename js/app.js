@@ -163,7 +163,7 @@ function saveData() {
 
     cloudSyncTimer = setTimeout(async () => {
         try {
-            await syncAll();
+            await syncChatsOnly();
             console.log("Cloud Sync Successful");
         } catch (error) {
             console.error("Cloud Sync Error:", error);
