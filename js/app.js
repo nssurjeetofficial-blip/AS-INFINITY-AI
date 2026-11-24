@@ -64,15 +64,13 @@ const activeCategory =
 let chats = loadChats();
 
 chats = chats.map(chat => ({
-    ...chat,
-    id: chat.id || crypto.randomUUID(),
-    title: chat.title || "New Chat",
-    messages: Array.isArray(chat.messages)
-        ? chat.messages
-        : [],
-    category: chat.category || "friend",
-    updated: chat.updated || Date.now()
-}));
+const chat = {
+    id: crypto.randomUUID(),
+    title: "New Chat",
+    messages: [],
+    category: activeCategory,
+    updated: Date.now()
+};
 
 // Preserve existing chats.
 // Old chats without a category are assigned to Friend AI.
