@@ -25,6 +25,66 @@ document.addEventListener("DOMContentLoaded", () => {
     const homeScreen = document.querySelector(".home-screen");
     const homeCenter = document.querySelector(".home-center");
 
+    // SPECIALIST HEADER
+const specialistInfo = {
+    medical: {
+        icon: "🏥",
+        name: "AS MEDICAL AI",
+        subtitle: "Your Healthcare Assistant"
+    },
+    study: {
+        icon: "🎓",
+        name: "AS STUDY AI",
+        subtitle: "Your Smart Learning Partner"
+    },
+    friend: {
+        icon: "❤️",
+        name: "AS FRIEND AI",
+        subtitle: "Your Friendly Companion"
+    }
+};
+
+const currentSpecialist =
+    specialistInfo[activeCategory] || specialistInfo.friend;
+
+const specialistHeader = document.createElement("div");
+
+specialistHeader.style.cssText = `
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 14px 18px;
+    margin: 12px 16px;
+    background: rgba(255, 63, 164, 0.08);
+    border: 1px solid rgba(255, 63, 164, 0.25);
+    border-radius: 16px;
+`;
+
+specialistHeader.innerHTML = `
+    <div>
+        <div style="font-size:17px;font-weight:700;color:white;">
+            ${currentSpecialist.icon} ${currentSpecialist.name}
+        </div>
+        <div style="font-size:12px;color:#c5aebe;margin-top:4px;">
+            ${currentSpecialist.subtitle}
+        </div>
+    </div>
+    <button id="switchSpecialist"
+        style="background:#ff3fa4;color:white;border:0;
+        padding:10px 13px;border-radius:10px;font-weight:600;">
+        Switch AI
+    </button>
+`;
+
+homeScreen.prepend(specialistHeader);
+
+specialistHeader.querySelector("#switchSpecialist")
+    .addEventListener("click", () => {
+        window.location.href = "dashboard.html";
+    });
+
+    
     const chatBox = document.querySelector(".chat-box");
     const input = chatBox?.querySelector("input");
     const sendButton = chatBox?.querySelector("button");
