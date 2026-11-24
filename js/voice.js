@@ -8,7 +8,70 @@ const WORKER_URL =
 let recorder = null;
 let audioChunks = [];
 let isListening = false;
+let isProcessing = false;
 let voiceOutputEnabled = false;
+
+// ======================================
+// MIC ICONS
+// ======================================
+
+function updateMicButton(button, state) {
+
+button.classList.remove("recording", "processing");
+
+if (state === "recording") {
+
+    button.classList.add("recording");
+    button.setAttribute("aria-label", "Stop recording");
+
+    button.innerHTML = `
+        <svg viewBox="0 0 24 24" fill="none">
+            <rect x="9" y="3" width="6" height="11"
+                rx="3" stroke="currentColor" stroke-width="1.8"/>
+            <path d="M5.5 11.5V12a6.5 6.5 0 0 0 13 0v-.5"
+                stroke="currentColor" stroke-width="1.8"
+                stroke-linecap="round"/>
+            <path d="M12 18.5V22M9 22h6"
+                stroke="currentColor" stroke-width="1.8"
+                stroke-linecap="round"/>
+        </svg>
+    `;
+
+} else if (state === "processing") {
+
+    button.classList.add("processing");
+    button.setAttribute("aria-label", "Processing audio");
+
+    button.innerHTML = `
+        <svg class="mic-spinner" viewBox="0 0 24 24" fill="none">
+            <circle cx="12" cy="12" r="9"
+                stroke="currentColor" stroke-width="3"
+                opacity=".2"/>
+            <path d="M12 3a9 9 0 0 1 9 9"
+                stroke="currentColor" stroke-width="3"
+                stroke-linecap="round"/>
+        </svg>
+    `;
+
+} else {
+
+    button.setAttribute("aria-label", "Start voice recording");
+
+    button.innerHTML = `
+        <svg viewBox="0 0 24 24" fill="none">
+            <rect x="9" y="2.5" width="6" height="12"
+                rx="3" stroke="currentColor" stroke-width="1.8"/>
+            <path d="M5.5 11.5V12a6.5 6.5 0 0 0 13 0v-.5"
+                stroke="currentColor" stroke-width="1.8"
+                stroke-linecap="round"/>
+            <path d="M12 18.5V22M9 22h6"
+                stroke="currentColor" stroke-width="1.8"
+                stroke-linecap="round"/>
+        </svg>
+    `;
+}
+
+}
 
 // ======================================
 // VOICE INPUT
@@ -16,102 +79,108 @@ let voiceOutputEnabled = false;
 
 export function setupVoiceInput(input, micButton) {
 
-    micButton.addEventListener("click", async () => {
+updateMicButton(micButton, "idle");
 
-        if (isListening) {
-            recorder?.stop();
-            return;
-        }
+micButton.addEventListener("click", async () => {
 
-        try {
+    if (isProcessing) return;
 
-            const stream =
-                await navigator.mediaDevices.getUserMedia({
-                    audio: true
-                });
+    if (isListening) {
+        recorder?.stop();
+        return;
+    }
 
-            audioChunks = [];
+    try {
 
-            recorder = new MediaRecorder(stream);
+        const stream =
+            await navigator.mediaDevices.getUserMedia({
+                audio: true
+            });
 
-            recorder.ondataavailable = event => {
-                if (event.data.size > 0) {
-                    audioChunks.push(event.data);
-                }
-            };
+        audioChunks = [];
 
-            recorder.onstart = () => {
-                isListening = true;
-                micButton.textContent = "🔴 Stop Recording";
-            };
+        recorder = new MediaRecorder(stream);
 
-            recorder.onstop = async () => {
+        recorder.ondataavailable = event => {
+            if (event.data.size > 0) {
+                audioChunks.push(event.data);
+            }
+        };
 
-                isListening = false;
-                micButton.textContent = "⏳ Processing...";
+        recorder.onstart = () => {
+            isListening = true;
+            updateMicButton(micButton, "recording");
+        };
 
-                stream.getTracks().forEach(track => track.stop());
+        recorder.onstop = async () => {
 
-                try {
+            isListening = false;
+            isProcessing = true;
 
-                    const audioBlob = new Blob(
-                        audioChunks,
-                        { type: recorder.mimeType || "audio/webm" }
-                    );
+            updateMicButton(micButton, "processing");
 
-                    const formData = new FormData();
+            stream.getTracks().forEach(track => track.stop());
 
-                    formData.append(
-                        "audio",
-                        audioBlob,
-                        "recording.webm"
-                    );
+            try {
 
-                    const response = await fetch(
-                        WORKER_URL + "/transcribe",
-                        {
-                            method: "POST",
-                            body: formData
-                        }
-                    );
+                const audioBlob = new Blob(
+                    audioChunks,
+                    { type: recorder.mimeType || "audio/webm" }
+                );
 
-                    const result = await response.json();
+                const formData = new FormData();
 
-                    if (!response.ok || !result.success) {
-                        throw new Error(
-                            result.error || "Transcription failed"
-                        );
+                formData.append(
+                    "audio",
+                    audioBlob,
+                    "recording.webm"
+                );
+
+                const response = await fetch(
+                    WORKER_URL + "/transcribe",
+                    {
+                        method: "POST",
+                        body: formData
                     }
+                );
 
-                    input.value = result.text || "";
+                const result = await response.json();
 
-                    input.dispatchEvent(
-                        new Event("input", { bubbles: true })
+                if (!response.ok || !result.success) {
+                    throw new Error(
+                        result.error || "Transcription failed"
                     );
-
-                    micButton.textContent = "🎤 Speak";
-
-                } catch (error) {
-
-                    console.error("Voice Error:", error);
-
-                    micButton.textContent = "❌ Try Again";
-
                 }
-            };
 
-            recorder.start();
+                input.value = result.text || "";
 
-        } catch (error) {
+                input.dispatchEvent(
+                    new Event("input", { bubbles: true })
+                );
 
-            console.error("Microphone Error:", error);
+            } catch (error) {
 
-            micButton.textContent =
-                error.name === "NotAllowedError"
-                    ? "Allow Microphone"
-                    : "Mic Unavailable";
-        }
-    });
+                console.error("Voice Error:", error);
+
+            } finally {
+
+                isProcessing = false;
+                updateMicButton(micButton, "idle");
+
+            }
+        };
+
+        recorder.start();
+
+    } catch (error) {
+
+        console.error("Microphone Error:", error);
+
+        updateMicButton(micButton, "idle");
+
+    }
+});
+
 }
 
 // ======================================
@@ -120,38 +189,41 @@ export function setupVoiceInput(input, micButton) {
 
 export function setVoiceOutput(enabled) {
 
-    voiceOutputEnabled = Boolean(enabled);
+voiceOutputEnabled = Boolean(enabled);
 
-    if (!voiceOutputEnabled) {
-        window.speechSynthesis.cancel();
-    }
+if (!voiceOutputEnabled) {
+    window.speechSynthesis.cancel();
+}
+
 }
 
 export function isVoiceOutputEnabled() {
-    return voiceOutputEnabled;
+return voiceOutputEnabled;
 }
 
 export function speakAI(text) {
 
-    if (!voiceOutputEnabled || !text) return;
+if (!voiceOutputEnabled || !text) return;
 
-    window.speechSynthesis.cancel();
+window.speechSynthesis.cancel();
 
-    const speech = new SpeechSynthesisUtterance(
-        String(text)
-    );
+const speech = new SpeechSynthesisUtterance(
+    String(text)
+);
 
-    speech.lang = "en-IN";
-    speech.rate = 1;
-    speech.pitch = 1;
-    speech.volume = 1;
+speech.lang = "en-IN";
+speech.rate = 1;
+speech.pitch = 1;
+speech.volume = 1;
 
-    window.speechSynthesis.speak(speech);
+window.speechSynthesis.speak(speech);
+
 }
 
 export function stopSpeaking() {
 
-    if ("speechSynthesis" in window) {
-        window.speechSynthesis.cancel();
-    }
+if ("speechSynthesis" in window) {
+    window.speechSynthesis.cancel();
 }
+
+            }
