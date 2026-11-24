@@ -322,11 +322,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
             const history = chat.messages.slice(0, -1);
 
-            const reply = await sendToAI(
-                message,
-                history,
-                getMemories()
-            );
+            const category = new URLSearchParams(window.location.search)
+    .get("category") || "friend";
+
+const reply = await sendToAI(
+    message,
+    history,
+    getMemories(),
+    category
+);
 
             const loading =
                 document.querySelector("#aiLoading");
