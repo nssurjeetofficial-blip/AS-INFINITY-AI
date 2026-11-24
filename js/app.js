@@ -120,7 +120,14 @@ specialistHeader.querySelector("#switchSpecialist")
 
 const activeCategory =
     new URLSearchParams(window.location.search).get("category") || "friend";
-
+// INITIAL CLOUD SYNC
+try {
+    await syncAll();
+    console.log("AS INFINITY AI Cloud Sync Successful");
+} catch (error) {
+    console.error("Cloud Sync Error:", error);
+}
+    
 let chats = loadChats();
 
 chats = chats.map(chat => ({
