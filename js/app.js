@@ -359,6 +359,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     // =================================
 
     function newChat() {
+        stopSpeaking();
         activeChatId = null;
 
         homeCenter.style.display = "";
