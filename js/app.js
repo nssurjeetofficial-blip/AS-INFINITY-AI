@@ -552,7 +552,22 @@ document.addEventListener("DOMContentLoaded", async () => {
 const micButton = document.createElement("button");
 
 micButton.type = "button";
-micButton.textContent = "🎤 Speak";
+micButton.className = "mic-button";
+micButton.setAttribute("aria-label", "Start voice recording");
+
+micButton.innerHTML = `
+    <svg viewBox="0 0 24 24" fill="none"
+         xmlns="http://www.w3.org/2000/svg">
+        <rect x="9" y="2.5" width="6" height="12"
+              rx="3" stroke="currentColor" stroke-width="1.8"/>
+        <path d="M5.5 11.5V12a6.5 6.5 0 0 0 13 0v-.5"
+              stroke="currentColor" stroke-width="1.8"
+              stroke-linecap="round"/>
+        <path d="M12 18.5V22M9 22h6"
+              stroke="currentColor" stroke-width="1.8"
+              stroke-linecap="round"/>
+    </svg>
+`;
 
 micButton.style.cssText = `
     padding:10px 12px;
