@@ -422,6 +422,11 @@ async function deleteChat(id) {
 
     const chat = createChat();
 
+    if (window.innerWidth <= 768) {
+        sidebar.classList.remove("active");
+        app.classList.remove("sidebar-open");
+    }
+
     homeCenter.style.display = "none";
     messageContainer.style.display = "flex";
     messageContainer.replaceChildren();
@@ -432,7 +437,6 @@ async function deleteChat(id) {
     input.value = "";
     input.focus();
     }
-    
 
     function createChat() {
     const chat = {
