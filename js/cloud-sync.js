@@ -1,5 +1,6 @@
 import { supabase } from "./supabase.js";
 import { getCurrentUser } from "./auth.js";
+
 import {
     loadChats,
     saveChats,
@@ -8,18 +9,29 @@ import {
     setStorageUser
 } from "./storage.js";
 
+// =====================================
+// 1. MAIN CLOUD SYNC
+// =====================================
+
 export async function syncAll() {
     const user = await getCurrentUser();
 
     if (!user) {
         throw new Error("Please login first.");
     }
-     setStorageUser(user.id);
+
+    setStorageUser(user.id);
+
     await syncChats(user.id);
     await syncMemories(user.id);
 
     return true;
 }
+
+// =====================================
+// 2. CHAT ONLY SYNC
+// =====================================
+
 export async function syncChatsOnly() {
     const user = await getCurrentUser();
 
@@ -34,9 +46,9 @@ export async function syncChatsOnly() {
     return true;
 }
 
-// ==============================
-// CHAT CLOUD SYNC
-// ==============================
+// =====================================
+// 3. CHAT CLOUD SYNC
+// =====================================
 
 async function syncChats(userId) {
     const localChats = loadChats();
@@ -50,6 +62,7 @@ async function syncChats(userId) {
 
     const merged = new Map();
 
+    // Cloud chats
     for (const chat of cloudChats || []) {
         merged.set(chat.id, {
             id: chat.id,
@@ -60,23 +73,35 @@ async function syncChats(userId) {
             category: chat.category || "friend",
             updated: chat.updated_at
                 ? new Date(chat.updated_at).getTime()
-                : Date.now()
+                : 0
         });
     }
 
-    for (const chat of localChats) {
+    // Merge local chats
+    for (const chat of localChats || []) {
+        if (!chat || !chat.id) continue;
+
         const existing = merged.get(chat.id);
 
-        if (!existing || (chat.updated || 0) >= existing.updated) {
+        if (
+            !existing ||
+            (chat.updated || 0) >= existing.updated
+        ) {
             merged.set(chat.id, {
                 ...chat,
-                category: chat.category || "friend"
+                title: chat.title || "New Chat",
+                messages: Array.isArray(chat.messages)
+                    ? chat.messages
+                    : [],
+                category: chat.category || "friend",
+                updated: chat.updated || Date.now()
             });
         }
     }
 
     const finalChats = Array.from(merged.values());
 
+    // Prepare database rows
     const rows = finalChats.map(chat => ({
         id: chat.id,
         user_id: userId,
@@ -88,10 +113,13 @@ async function syncChats(userId) {
         ).toISOString()
     }));
 
-    if (rows.length) {
+    // Upload merged chats
+    if (rows.length > 0) {
         const { error: saveError } = await supabase
             .from("chats")
-            .upsert(rows, { onConflict: "id" });
+            .upsert(rows, {
+                onConflict: "id"
+            });
 
         if (saveError) throw saveError;
     }
@@ -99,9 +127,9 @@ async function syncChats(userId) {
     saveChats(finalChats);
 }
 
-// ==============================
-// MEMORY CLOUD SYNC
-// ==============================
+// =====================================
+// 4. INITIAL MEMORY SYNC
+// =====================================
 
 async function syncMemories(userId) {
     const localMemories = loadMemories();
@@ -113,15 +141,27 @@ async function syncMemories(userId) {
 
     if (error) throw error;
 
-    const merged = new Set(
-        (cloudMemories || []).map(item => item.content)
-    );
+    const merged = new Set();
 
-    localMemories.forEach(memory => {
-        if (typeof memory === "string" && memory.trim()) {
-            merged.add(memory);
+    // Cloud memories
+    for (const item of cloudMemories || []) {
+        if (
+            typeof item.content === "string" &&
+            item.content.trim()
+        ) {
+            merged.add(item.content.trim());
         }
-    });
+    }
+
+    // Local memories
+    for (const memory of localMemories || []) {
+        if (
+            typeof memory === "string" &&
+            memory.trim()
+        ) {
+            merged.add(memory.trim());
+        }
+    }
 
     const finalMemories = Array.from(merged);
 
@@ -136,7 +176,7 @@ async function syncMemories(userId) {
             content
         }));
 
-    if (newRows.length) {
+    if (newRows.length > 0) {
         const { error: saveError } = await supabase
             .from("memories")
             .insert(newRows);
@@ -145,15 +185,26 @@ async function syncMemories(userId) {
     }
 
     saveMemories(finalMemories);
-          }
-// ==============================
-// SAVE MEMORY CHANGES TO CLOUD
-// ==============================
+}
+
+// =====================================
+// 5. SAVE MEMORY CHANGES TO CLOUD
+// =====================================
 
 export async function syncMemoriesToCloud(localMemories) {
     const user = await getCurrentUser();
 
-    if (!user) return;
+    if (!user) return false;
+
+    const safeMemories = [
+        ...new Set(
+            (Array.isArray(localMemories) ? localMemories : [])
+                .filter(item =>
+                    typeof item === "string" && item.trim()
+                )
+                .map(item => item.trim())
+        )
+    ];
 
     const { data: cloudMemories, error } = await supabase
         .from("memories")
@@ -162,24 +213,34 @@ export async function syncMemoriesToCloud(localMemories) {
 
     if (error) throw error;
 
-    const localSet = new Set(localMemories);
-
-    const obsoleteIds = (cloudMemories || [])
-        .filter(item => !localSet.has(item.content))
-        .map(item => item.id);
-
     const cloudSet = new Set(
         (cloudMemories || []).map(item => item.content)
     );
 
-    const newRows = [...localSet]
-        .filter(item => !cloudSet.has(item))
+    const localSet = new Set(safeMemories);
+
+    // Insert new memories first
+    const newRows = safeMemories
+        .filter(memory => !cloudSet.has(memory))
         .map(content => ({
             user_id: user.id,
             content
         }));
 
-    if (obsoleteIds.length) {
+    if (newRows.length > 0) {
+        const { error: insertError } = await supabase
+            .from("memories")
+            .insert(newRows);
+
+        if (insertError) throw insertError;
+    }
+
+    // Delete memories removed locally
+    const obsoleteIds = (cloudMemories || [])
+        .filter(item => !localSet.has(item.content))
+        .map(item => item.id);
+
+    if (obsoleteIds.length > 0) {
         const { error: deleteError } = await supabase
             .from("memories")
             .delete()
@@ -189,12 +250,5 @@ export async function syncMemoriesToCloud(localMemories) {
         if (deleteError) throw deleteError;
     }
 
-    if (newRows.length) {
-        const { error: insertError } = await supabase
-            .from("memories")
-            .insert(newRows);
-
-        if (insertError) throw insertError;
-    }
+    return true;
 }
-
