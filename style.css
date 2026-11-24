@@ -874,3 +874,71 @@ button {
         font-size: 10px;
     }
     }
+/* =================================
+   AS INFINITY AI — PREMIUM MIC UI
+================================= */
+
+.chat-box .mic-button {
+    width: 48px !important;
+    height: 48px !important;
+    min-width: 48px !important;
+    padding: 0 !important;
+    margin: 0 !important;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0 !important;
+
+    flex-shrink: 0;
+    border: 1px solid rgba(255, 63, 164, .65) !important;
+    border-radius: 15px !important;
+
+    background: rgba(255, 63, 164, .09) !important;
+    color: #ff80c5 !important;
+
+    box-shadow: 0 0 18px rgba(255, 63, 164, .08);
+    transition: .25s ease;
+}
+
+.chat-box .mic-button svg {
+    width: 23px;
+    height: 23px;
+    display: block;
+}
+
+.chat-box .mic-button:hover {
+    background: rgba(255, 63, 164, .2) !important;
+    border-color: #ff3fa4 !important;
+    box-shadow: 0 0 20px rgba(255, 63, 164, .25);
+}
+
+.chat-box .mic-button.recording {
+    background: rgba(255, 30, 100, .18) !important;
+    border-color: #ff3f75 !important;
+    animation: micPulse 1.2s infinite;
+}
+
+.chat-box .mic-button.processing {
+    opacity: .7;
+    cursor: wait;
+}
+
+@keyframes micPulse {
+    50% {
+        box-shadow: 0 0 22px rgba(255, 40, 100, .55);
+    }
+}
+
+@media (max-width: 650px) {
+    .chat-box .mic-button {
+        width: 43px !important;
+        height: 43px !important;
+        min-width: 43px !important;
+    }
+
+    .chat-box .mic-button svg {
+        width: 21px;
+        height: 21px;
+    }
+}
