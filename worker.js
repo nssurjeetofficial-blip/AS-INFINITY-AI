@@ -121,7 +121,67 @@ export default {
     if (request.method === "OPTIONS") {
       return new Response(null, { headers });
     }
+// ======================================
+// VOICE INPUT — WHISPER
+// ======================================
 
+const url = new URL(request.url);
+
+if (
+  request.method === "POST" &&
+  url.pathname === "/transcribe"
+) {
+  try {
+    const formData = await request.formData();
+    const audio = formData.get("audio");
+
+    if (
+      !audio ||
+      typeof audio.arrayBuffer !== "function"
+    ) {
+      return Response.json(
+        { success: false, error: "Audio missing" },
+        { status: 400, headers }
+      );
+    }
+
+    if (audio.size > 8 * 1024 * 1024) {
+      return Response.json(
+        { success: false, error: "Audio too large" },
+        { status: 413, headers }
+      );
+    }
+
+    const bytes = new Uint8Array(
+      await audio.arrayBuffer()
+    );
+
+    const result = await env.AI.run(
+      "@cf/openai/whisper-large-v3-turbo",
+      {
+        audio: audioToBase64(bytes),
+        task: "transcribe"
+      }
+    );
+
+    return Response.json({
+      success: true,
+      text: result.text || ""
+    }, { headers });
+
+  } catch (error) {
+    console.error("Voice transcription error:", error);
+
+    return Response.json({
+      success: false,
+      error: "Voice transcription failed."
+    }, {
+      status: 500,
+      headers
+    });
+  }
+}
+    
     if (request.method === "GET") {
       return Response.json({
         name: "AS INFINITY AI",
