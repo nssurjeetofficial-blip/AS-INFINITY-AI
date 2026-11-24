@@ -150,9 +150,23 @@ function getActiveChat() {
     return chats.find(chat => chat.id === activeChatId);
 }
 
+let cloudSyncTimer;
+
 function saveData() {
     saveChats(chats);
-} 
+
+    clearTimeout(cloudSyncTimer);
+
+    cloudSyncTimer = setTimeout(async () => {
+        try {
+            await syncAll();
+            console.log("Cloud Sync Successful");
+        } catch (error) {
+            console.error("Cloud Sync Error:", error);
+        }
+    }, 1000);
+}
+    
     
 
     // =================================
