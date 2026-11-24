@@ -418,38 +418,38 @@ async function deleteChat(id) {
     // =================================
 
     function newChat() {
-        stopSpeaking();
-        activeChatId = null;
+    stopSpeaking();
 
-        homeCenter.style.display = "";
-        messageContainer.style.display = "none";
+    const chat = createChat();
 
-        messageContainer.replaceChildren();
+    homeCenter.style.display = "none";
+    messageContainer.style.display = "flex";
+    messageContainer.replaceChildren();
 
-        input.value = "";
+    renderChat();
+    updateSidebar();
 
-        updateSidebar();
-        input.focus();
+    input.value = "";
+    input.focus();
     }
     
 
     function createChat() {
-        const chat = {
-            id: crypto.randomUUID(),
-            title: "New Chat",
-            messages: [],
-            category: activeCategory,
-            updated: Date.now()
-        };
+    const chat = {
+        id: crypto.randomUUID(),
+        title: "New Chat",
+        messages: [],
+        category: activeCategory,
+        updated: Date.now()
+    };
 
-        chats.unshift(chat);
+    chats.unshift(chat);
+    activeChatId = chat.id;
 
-        activeChatId = chat.id;
+    saveData();
+    updateSidebar();
 
-        saveData();
-        updateSidebar();
-
-        return chat;
+    return chat;
     }
 
     // =================================
