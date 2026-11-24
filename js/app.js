@@ -7,7 +7,8 @@ import {
 } from "./voice.js";
 import {
     syncAll,
-    syncChatsOnly
+    syncChatsOnly,
+    deleteChatFromCloud
 } from "./cloud-sync.js";
 
 import {
