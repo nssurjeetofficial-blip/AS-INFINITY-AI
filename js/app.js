@@ -55,31 +55,40 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // =================================
-    // 2. CHAT DATA
-    // =================================
+// 2. CHAT DATA
+// =================================
 
-    let chats = loadChats();
+const activeCategory =
+    new URLSearchParams(window.location.search).get("category") || "friend";
 
-    chats = chats.map(chat => ({
-        ...chat,
-        id: chat.id || crypto.randomUUID(),
-        title: chat.title || "New Chat",
-        messages: Array.isArray(chat.messages)
-            ? chat.messages
-            : [],
-        updated: chat.updated || Date.now()
-    }));
+let chats = loadChats();
 
-    let activeChatId = null;
-    let isSending = false;
+chats = chats.map(chat => ({
+    ...chat,
+    id: chat.id || crypto.randomUUID(),
+    title: chat.title || "New Chat",
+    messages: Array.isArray(chat.messages)
+        ? chat.messages
+        : [],
+    category: chat.category || "friend",
+    updated: chat.updated || Date.now()
+}));
 
-    function getActiveChat() {
-        return chats.find(chat => chat.id === activeChatId);
-    }
+// Preserve existing chats.
+// Old chats without a category are assigned to Friend AI.
+saveChats(chats);
 
-    function saveData() {
-        saveChats(chats);
-    }
+let activeChatId = null;
+let isSending = false;
+
+function getActiveChat() {
+    return chats.find(chat => chat.id === activeChatId);
+}
+
+function saveData() {
+    saveChats(chats);
+} 
+    
 
     // =================================
     // 3. MESSAGE CONTAINER
