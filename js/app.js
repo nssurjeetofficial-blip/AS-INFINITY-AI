@@ -431,6 +431,12 @@ async function deleteChat(id) {
         updateSidebar();
         input.focus();
     }
+    const newChatButton = document.getElementById("newChatButton");
+
+if (newChatButton) {
+    newChatButton.addEventListener("click", newChat);
+}
+    
 
     function createChat() {
         const chat = {
