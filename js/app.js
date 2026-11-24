@@ -1,3 +1,4 @@
+import { syncAll } from "./cloud-sync.js";
 import { loadChats, saveChats } from "./storage.js";
 
 import {
@@ -11,8 +12,7 @@ import { sendToAI } from "./chat.js";
 
 import { renderSidebarHistory } from "./sidebar.js";
 
-document.addEventListener("DOMContentLoaded", () => {
-
+document.addEventListener("DOMContentLoaded", async () => {
     // =================================
     // 1. HTML ELEMENTS
     // =================================
