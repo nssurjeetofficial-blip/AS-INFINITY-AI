@@ -1,6 +1,11 @@
 import { API_URL } from "./config.js";
 
-export async function sendToAI(message, history = [], memories = []) {
+export async function sendToAI(
+    message,
+    history = [],
+    memories = [],
+    category = "friend"
+) {
     try {
         const response = await fetch(API_URL, {
             method: "POST",
@@ -10,7 +15,8 @@ export async function sendToAI(message, history = [], memories = []) {
             body: JSON.stringify({
                 message,
                 history,
-                memories
+                memories,
+                category
             })
         });
 
