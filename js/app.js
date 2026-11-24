@@ -544,7 +544,59 @@ document.addEventListener("DOMContentLoaded", async () => {
         memoryButton,
         topbarRight.firstChild
     );
+// =================================
+// VOICE CONTROLS
+// =================================
 
+const micButton = document.createElement("button");
+
+micButton.type = "button";
+micButton.textContent = "🎤 Speak";
+
+micButton.style.cssText = `
+    padding:10px 12px;
+    border:1px solid #ff3fa4;
+    border-radius:10px;
+    background:#19121c;
+    color:#ff80c5;
+    cursor:pointer;
+    font-size:12px;
+`;
+
+chatBox.insertBefore(micButton, sendButton);
+
+setupVoiceInput(input, micButton);
+
+// Voice Output Toggle
+
+const voiceToggle = document.createElement("button");
+
+voiceToggle.type = "button";
+voiceToggle.textContent = "🔇 Voice OFF";
+
+voiceToggle.style.cssText = `
+    padding:10px 12px;
+    margin-right:5px;
+    border:1px solid #ff3fa4;
+    border-radius:10px;
+    background:#19121c;
+    color:#ff80c5;
+    cursor:pointer;
+    font-size:12px;
+`;
+
+topbarRight.insertBefore(voiceToggle, memoryButton);
+
+voiceToggle.addEventListener("click", () => {
+    const enabled = !isVoiceOutputEnabled();
+
+    setVoiceOutput(enabled);
+
+    voiceToggle.textContent = enabled
+        ? "🔊 Voice ON"
+        : "🔇 Voice OFF";
+});
+    
     // =================================
     // 16. MEMORY MANAGER
     // =================================
