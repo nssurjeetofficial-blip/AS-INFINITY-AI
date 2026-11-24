@@ -308,18 +308,76 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 
     // =================================
-    // 8. SIDEBAR HISTORY
-    // =================================
+// 8. SIDEBAR HISTORY
+// =================================
 
-    function updateSidebar() {
-        renderSidebarHistory(
-            chats.filter(chat =>
-                chat.category === activeCategory
-            ),
-            activeChatId,
-            openChat
-        );
+function updateSidebar() {
+    renderSidebarHistory(
+        chats.filter(chat =>
+            chat.category === activeCategory
+        ),
+        activeChatId,
+        openChat,
+        deleteChat
+    );
+}
+
+// =================================
+// DELETE CHAT
+// =================================
+
+async function deleteChat(id) {
+    const chat = chats.find(item => item.id === id);
+
+    if (!chat) return;
+
+    const confirmed = window.confirm(
+        `Delete "${chat.title || "New Chat"}"? This cannot be undone.`
+    );
+
+    if (!confirmed) return;
+
+    try {
+        clearTimeout(cloudSyncTimer);
+
+        // Delete from Supabase first
+        await deleteChatFromCloud(id);
+
+        // Delete from local chat list
+        const index = chats.findIndex(item => item.id === id);
+
+        if (index !== -1) {
+            chats.splice(index, 1);
+        }
+
+        // Update local storage
+        saveData();
+
+        // If currently opened chat was deleted
+        if (activeChatId === id) {
+            stopSpeaking();
+
+            const nextChat = chats
+                .filter(item => item.category === activeCategory)
+                .sort((a, b) => (b.updated || 0) - (a.updated || 0))[0];
+
+            if (nextChat) {
+                openChat(nextChat.id);
+            } else {
+                newChat();
+            }
+        } else {
+            updateSidebar();
+        }
+
+        console.log("Chat deleted successfully.");
+
+    } catch (error) {
+        console.error("Chat deletion failed:", error);
+
+        alert("Chat delete nahi hui. Please try again.");
     }
+}
 
     // =================================
     // 9. OPEN CHAT
