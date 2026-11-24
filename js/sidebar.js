@@ -60,7 +60,18 @@ chats.forEach(chat => {
     const deleteButton = document.createElement("button");
 
     deleteButton.type = "button";
-    deleteButton.textContent = "🗑️";
+    deleteButton.innerHTML = `
+<svg width="19" height="19" viewBox="0 0 24 24"
+     fill="none" stroke="currentColor"
+     stroke-width="1.7" stroke-linecap="round"
+     stroke-linejoin="round">
+    <path d="M4 7h16"/>
+    <path d="M10 11v6"/>
+    <path d="M14 11v6"/>
+    <path d="M5 7l1 14h12l1-14"/>
+    <path d="M9 7V4h6v3"/>
+</svg>
+`;
     deleteButton.setAttribute("aria-label", "Delete chat");
 
     deleteButton.style.cssText = `
