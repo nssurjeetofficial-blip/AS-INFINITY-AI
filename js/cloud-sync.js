@@ -132,3 +132,55 @@ async function syncMemories(userId) {
 
     saveMemories(finalMemories);
           }
+// ==============================
+// SAVE MEMORY CHANGES TO CLOUD
+// ==============================
+
+export async function syncMemoriesToCloud(localMemories) {
+    const user = await getCurrentUser();
+
+    if (!user) return;
+
+    const { data: cloudMemories, error } = await supabase
+        .from("memories")
+        .select("id, content")
+        .eq("user_id", user.id);
+
+    if (error) throw error;
+
+    const localSet = new Set(localMemories);
+
+    const obsoleteIds = (cloudMemories || [])
+        .filter(item => !localSet.has(item.content))
+        .map(item => item.id);
+
+    const cloudSet = new Set(
+        (cloudMemories || []).map(item => item.content)
+    );
+
+    const newRows = [...localSet]
+        .filter(item => !cloudSet.has(item))
+        .map(content => ({
+            user_id: user.id,
+            content
+        }));
+
+    if (obsoleteIds.length) {
+        const { error: deleteError } = await supabase
+            .from("memories")
+            .delete()
+            .eq("user_id", user.id)
+            .in("id", obsoleteIds);
+
+        if (deleteError) throw deleteError;
+    }
+
+    if (newRows.length) {
+        const { error: insertError } = await supabase
+            .from("memories")
+            .insert(newRows);
+
+        if (insertError) throw insertError;
+    }
+}
+
