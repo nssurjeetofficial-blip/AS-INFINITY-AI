@@ -2,19 +2,13 @@
 // AS INFINITY AI — VOICE ENGINE
 // ======================================
 
-let recognition = null;
+const WORKER_URL =
+"https://as-infinity-ai.nssurjeetofficial.workers.dev";
+
+let recorder = null;
+let audioChunks = [];
 let isListening = false;
 let voiceOutputEnabled = false;
-
-export function isVoiceSupported() {
-    return (
-        "speechSynthesis" in window &&
-        (
-            "SpeechRecognition" in window ||
-            "webkitSpeechRecognition" in window
-        )
-    );
-}
 
 // ======================================
 // VOICE INPUT
@@ -22,81 +16,100 @@ export function isVoiceSupported() {
 
 export function setupVoiceInput(input, micButton) {
 
-    const SpeechRecognition =
-        window.SpeechRecognition ||
-        window.webkitSpeechRecognition;
-
-    if (!SpeechRecognition) {
-        micButton.disabled = true;
-        micButton.textContent = "Mic unsupported";
-        return;
-    }
-
-    recognition = new SpeechRecognition();
-
-    recognition.lang = "en-IN";
-    recognition.continuous = false;
-    recognition.interimResults = false;
-
-    recognition.onstart = () => {
-        isListening = true;
-        micButton.textContent = "🔴 Listening...";
-    };
-
-    recognition.onresult = event => {
-        const transcript =
-            event.results[0][0].transcript;
-
-        input.value = transcript;
-
-        input.dispatchEvent(
-            new Event("input", { bubbles: true })
-        );
-
-        micButton.textContent = "✅ Done";
-    };
-
-    recognition.onerror = event => {
-        isListening = false;
-
-        const errors = {
-            "not-allowed": "Allow Mic Permission",
-            "audio-capture": "Mic Not Found",
-            "no-speech": "No Voice Detected",
-            "network": "Network Error",
-            "service-not-allowed": "Mic Service Blocked"
-        };
-
-        micButton.textContent =
-            errors[event.error] || "Mic Error";
-
-        console.error("Voice Error:", event.error);
-    };
-
-    recognition.onend = () => {
-        isListening = false;
-
-        if (
-            micButton.textContent === "🔴 Listening..."
-        ) {
-            micButton.textContent = "🎤 Speak";
-        }
-    };
-
-    micButton.addEventListener("click", () => {
+    micButton.addEventListener("click", async () => {
 
         if (isListening) {
-            recognition.stop();
+            recorder?.stop();
             return;
         }
 
-        micButton.textContent = "Starting...";
-
         try {
-            recognition.start();
+
+            const stream =
+                await navigator.mediaDevices.getUserMedia({
+                    audio: true
+                });
+
+            audioChunks = [];
+
+            recorder = new MediaRecorder(stream);
+
+            recorder.ondataavailable = event => {
+                if (event.data.size > 0) {
+                    audioChunks.push(event.data);
+                }
+            };
+
+            recorder.onstart = () => {
+                isListening = true;
+                micButton.textContent = "🔴 Stop Recording";
+            };
+
+            recorder.onstop = async () => {
+
+                isListening = false;
+                micButton.textContent = "⏳ Processing...";
+
+                stream.getTracks().forEach(track => track.stop());
+
+                try {
+
+                    const audioBlob = new Blob(
+                        audioChunks,
+                        { type: recorder.mimeType || "audio/webm" }
+                    );
+
+                    const formData = new FormData();
+
+                    formData.append(
+                        "audio",
+                        audioBlob,
+                        "recording.webm"
+                    );
+
+                    const response = await fetch(
+                        WORKER_URL + "/transcribe",
+                        {
+                            method: "POST",
+                            body: formData
+                        }
+                    );
+
+                    const result = await response.json();
+
+                    if (!response.ok || !result.success) {
+                        throw new Error(
+                            result.error || "Transcription failed"
+                        );
+                    }
+
+                    input.value = result.text || "";
+
+                    input.dispatchEvent(
+                        new Event("input", { bubbles: true })
+                    );
+
+                    micButton.textContent = "🎤 Speak";
+
+                } catch (error) {
+
+                    console.error("Voice Error:", error);
+
+                    micButton.textContent = "❌ Try Again";
+
+                }
+            };
+
+            recorder.start();
+
         } catch (error) {
-            micButton.textContent = "Try Again";
-            console.error(error);
+
+            console.error("Microphone Error:", error);
+
+            micButton.textContent =
+                error.name === "NotAllowedError"
+                    ? "Allow Microphone"
+                    : "Mic Unavailable";
         }
     });
 }
@@ -106,6 +119,7 @@ export function setupVoiceInput(input, micButton) {
 // ======================================
 
 export function setVoiceOutput(enabled) {
+
     voiceOutputEnabled = Boolean(enabled);
 
     if (!voiceOutputEnabled) {
@@ -120,8 +134,6 @@ export function isVoiceOutputEnabled() {
 export function speakAI(text) {
 
     if (!voiceOutputEnabled || !text) return;
-
-    if (!("speechSynthesis" in window)) return;
 
     window.speechSynthesis.cancel();
 
@@ -138,6 +150,7 @@ export function speakAI(text) {
 }
 
 export function stopSpeaking() {
+
     if ("speechSynthesis" in window) {
         window.speechSynthesis.cancel();
     }
