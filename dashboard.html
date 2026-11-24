@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>AS INFINITY AI | Dashboard</title>
+
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    min-height: 100vh;
+    background: #080609;
+    color: #fff;
+    font-family: Arial, sans-serif;
+    padding: 25px;
+}
+
+.container {
+    max-width: 1100px;
+    margin: auto;
+}
+
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+    padding: 15px 0 35px;
+    border-bottom: 1px solid #ff3fa433;
+}
+
+.logo {
+    color: #ff4fa3;
+    font-size: 23px;
+    font-weight: bold;
+}
+
+.tagline {
+    color: #aaa;
+    font-size: 12px;
+    margin-top: 6px;
+}
+
+.logout {
+    padding: 10px 17px;
+    border: 1px solid #ff4fa3;
+    border-radius: 9px;
+    color: #ff80c5;
+    background: transparent;
+    cursor: pointer;
+}
+
+.welcome {
+    text-align: center;
+    margin: 65px 0 45px;
+}
+
+.welcome h1 {
+    font-size: clamp(27px, 5vw, 40px);
+    margin-bottom: 14px;
+}
+
+.welcome h1 span {
+    color: #ff4fa3;
+}
+
+.welcome p {
+    color: #aaa;
+    line-height: 1.6;
+}
+
+.cards {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 22px;
+}
+
+.card {
+    display: block;
+    text-decoration: none;
+    color: white;
+    padding: 30px 22px;
+    min-height: 240px;
+    background: linear-gradient(145deg, #19111b, #0e0a10);
+    border: 1px solid #ff4fa344;
+    border-radius: 20px;
+    transition: .25s;
+}
+
+.card:hover {
+    transform: translateY(-6px);
+    border-color: #ff4fa3;
+    box-shadow: 0 0 25px #ff4fa322;
+}
+
+.icon {
+    font-size: 42px;
+    margin-bottom: 22px;
+}
+
+.card h2 {
+    color: #ff80c5;
+    font-size: 19px;
+    margin-bottom: 12px;
+}
+
+.card p {
+    color: #b9abb8;
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+.open {
+    display: inline-block;
+    margin-top: 22px;
+    color: #ff80c5;
+    font-size: 13px;
+    font-weight: bold;
+}
+
+footer {
+    text-align: center;
+    color: #766b76;
+    font-size: 12px;
+    margin-top: 65px;
+}
+
+@media (max-width: 750px) {
+    .cards {
+        grid-template-columns: 1fr;
+    }
+
+    .welcome {
+        margin: 45px 0 30px;
+    }
+
+    .card {
+        min-height: 200px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<header>
+    <div>
+        <div class="logo">∞ AS INFINITY AI</div>
+        <div class="tagline">Intelligence Without Limits.</div>
+    </div>
+
+    <button class="logout" id="logoutBtn">Logout</button>
+</header>
+
+<section class="welcome">
+    <h1>Welcome to <span>AS INFINITY AI</span></h1>
+    <p>Choose your AI companion and start your journey.</p>
+</section>
+
+<section class="cards">
+
+    <a href="index.html?category=medical" class="card">
+        <div class="icon">🏥</div>
+        <h2>AS MEDICAL AI</h2>
+        <p>Your Healthcare Assistant</p>
+        <span class="open">Open Medical AI →</span>
+    </a>
+
+    <a href="index.html?category=study" class="card">
+        <div class="icon">🎓</div>
+        <h2>AS STUDY AI</h2>
+        <p>Your Smart Learning Partner</p>
+        <span class="open">Open Study AI →</span>
+    </a>
+
+    <a href="index.html?category=friend" class="card">
+        <div class="icon">❤️</div>
+        <h2>AS FRIEND AI</h2>
+        <p>Your Friendly Companion</p>
+        <span class="open">Open Friend AI →</span>
+    </a>
+
+</section>
+
+<footer>
+    © 2026 AS INFINITY AI · Intelligence Without Limits.
+</footer>
+
+</div>
+
+<script type="module">
+import { getCurrentUser, logout } from "./js/auth.js";
+
+try {
+    const user = await getCurrentUser();
+
+    if (!user) {
+        window.location.replace("auth.html");
+    }
+} catch (error) {
+    window.location.replace("auth.html");
+}
+
+document.getElementById("logoutBtn").addEventListener("click", async () => {
+    const button = document.getElementById("logoutBtn");
+    button.disabled = true;
+
+    try {
+        await logout();
+        window.location.replace("auth.html");
+    } catch (error) {
+        button.disabled = false;
+        alert("Logout failed. Please try again.");
+    }
+});
+</script>
+
+</body>
+  </html>
