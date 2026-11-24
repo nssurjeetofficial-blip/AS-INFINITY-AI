@@ -14,7 +14,7 @@ export async function syncAll() {
     if (!user) {
         throw new Error("Please login first.");
     }
-
+     setStorageUser(user.id);
     await syncChats(user.id);
     await syncMemories(user.id);
 
