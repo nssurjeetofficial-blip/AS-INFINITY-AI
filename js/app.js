@@ -5,6 +5,7 @@ import {
     speakAI,
     stopSpeaking
 } from "./voice.js";
+
 import {
     syncAll,
     syncChatsOnly,
@@ -26,6 +27,7 @@ import {
 import { sendToAI } from "./chat.js";
 import { renderSidebarHistory } from "./sidebar.js";
 
+
 document.addEventListener("DOMContentLoaded", async () => {
 
     // =================================
@@ -41,6 +43,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         window.location.replace("dashboard.html");
         return;
     }
+
 
     // =================================
     // 2. HTML ELEMENTS
@@ -81,6 +84,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         console.error("AS INFINITY AI: Required HTML element missing.");
         return;
     }
+
 
     // =================================
     // 3. SPECIALIST HEADER
@@ -134,6 +138,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         </div>
 
         <button id="switchSpecialist"
+            type="button"
             style="background:#ff3fa4;color:white;border:0;
             padding:10px 13px;border-radius:10px;font-weight:600;">
             Switch AI
@@ -148,6 +153,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             window.location.href = "dashboard.html";
         });
 
+
     // =================================
     // 4. INITIAL CLOUD SYNC
     // =================================
@@ -158,6 +164,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     } catch (error) {
         console.error("Cloud Sync Error:", error);
     }
+
 
     // =================================
     // 5. CHAT DATA
@@ -182,9 +189,11 @@ document.addEventListener("DOMContentLoaded", async () => {
     let isSending = false;
     let cloudSyncTimer;
 
+
     function getActiveChat() {
         return chats.find(chat => chat.id === activeChatId);
     }
+
 
     function saveData() {
         saveChats(chats);
@@ -200,6 +209,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             }
         }, 1000);
     }
+
 
     // =================================
     // 6. MESSAGE CONTAINER
@@ -225,14 +235,17 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     homeScreen.insertBefore(messageContainer, chatBox);
 
+
     // =================================
     // 7. RENDER MESSAGES
     // =================================
 
     function renderMessages(messages) {
+
         messageContainer.replaceChildren();
 
         messages.forEach(message => {
+
             const row = document.createElement("div");
 
             row.style.cssText = `
@@ -276,13 +289,16 @@ document.addEventListener("DOMContentLoaded", async () => {
 
             row.appendChild(bubble);
             messageContainer.appendChild(row);
+
         });
 
         messageContainer.scrollTop =
             messageContainer.scrollHeight;
     }
 
+
     function showLoading() {
+
         const loading = document.createElement("div");
 
         loading.id = "aiLoading";
@@ -307,83 +323,56 @@ document.addEventListener("DOMContentLoaded", async () => {
             messageContainer.scrollHeight;
     }
 
+
     // =================================
-// 8. SIDEBAR HISTORY
-// =================================
+    // 8. SIDEBAR HISTORY
+    // =================================
 
-function updateSidebar() {
-    renderSidebarHistory(
-        chats.filter(chat =>
-            chat.category === activeCategory
-        ),
-        activeChatId,
-        openChat,
-        deleteChat
-    );
-}
+    function updateSidebar() {
 
-// =================================
-// DELETE CHAT
-// =================================
+        renderSidebarHistory(
+            chats.filter(chat =>
+                chat.category === activeCategory
+            ),
+            activeChatId,
+            openChat,
+            deleteChat
+        );
 
-async function deleteChat(id) {
-    const chat = chats.find(item => item.id === id);
-
-    if (!chat) return;
-
-    const confirmed = window.confirm(
-        `Delete "${chat.title || "New Chat"}"? This cannot be undone.`
-    );
-
-    if (!confirmed) return;
-
-    try {
-        clearTimeout(cloudSyncTimer);
-
-        // Delete from Supabase first
-        await deleteChatFromCloud(id);
-
-        // Delete from local chat list
-        const index = chats.findIndex(item => item.id === id);
-
-        if (index !== -1) {
-            chats.splice(index, 1);
-        }
-
-        // Update local storage
-        saveData();
-
-        // If currently opened chat was deleted
-        if (activeChatId === id) {
-            stopSpeaking();
-
-            const nextChat = chats
-                .filter(item => item.category === activeCategory)
-                .sort((a, b) => (b.updated || 0) - (a.updated || 0))[0];
-
-            if (nextChat) {
-                openChat(nextChat.id);
-            } else {
-                newChat();
-            }
-        } else {
-            updateSidebar();
-        }
-
-        console.log("Chat deleted successfully.");
-
-    } catch (error) {
-        console.error("Chat deletion failed:", error);
-
-        alert("Chat delete nahi hui. Please try again.");
     }
-}
+
 
     // =================================
-    // 9. OPEN CHAT
+    // 9. CREATE CHAT
+    // =================================
+
+    function createChat() {
+
+        const chat = {
+            id: crypto.randomUUID(),
+            title: "New Chat",
+            messages: [],
+            category: activeCategory,
+            updated: Date.now()
+        };
+
+        chats.unshift(chat);
+
+        activeChatId = chat.id;
+
+        saveData();
+        updateSidebar();
+
+        return chat;
+    }
+
+
+    // =================================
+    // 10. RENDER CHAT
     // =================================
 
     function renderChat() {
+
         const chat = getActiveChat();
 
         if (!chat) return;
@@ -394,7 +383,13 @@ async function deleteChat(id) {
         renderMessages(chat.messages);
     }
 
+
+    // =================================
+    // 11. OPEN CHAT
+    // =================================
+
     function openChat(id) {
+
         const chat = chats.find(item => item.id === id);
 
         if (!chat || chat.category !== activeCategory) {
@@ -406,6 +401,7 @@ async function deleteChat(id) {
         renderChat();
         updateSidebar();
 
+        // Close mobile sidebar
         if (window.innerWidth <= 650) {
             sidebar.classList.remove("mobile-open");
         }
@@ -413,54 +409,105 @@ async function deleteChat(id) {
         input.focus();
     }
 
+
     // =================================
-    // 10. NEW CHAT
+    // 12. DELETE CHAT
+    // =================================
+
+    async function deleteChat(id) {
+
+        const chat = chats.find(item => item.id === id);
+
+        if (!chat) return;
+
+        const confirmed = window.confirm(
+            `Delete "${chat.title || "New Chat"}"? This cannot be undone.`
+        );
+
+        if (!confirmed) return;
+
+        try {
+
+            clearTimeout(cloudSyncTimer);
+
+            await deleteChatFromCloud(id);
+
+            const index = chats.findIndex(item => item.id === id);
+
+            if (index !== -1) {
+                chats.splice(index, 1);
+            }
+
+            saveData();
+
+            if (activeChatId === id) {
+
+                stopSpeaking();
+
+                const nextChat = chats
+                    .filter(item => item.category === activeCategory)
+                    .sort((a, b) =>
+                        (b.updated || 0) - (a.updated || 0)
+                    )[0];
+
+                if (nextChat) {
+                    openChat(nextChat.id);
+                } else {
+                    newChat();
+                }
+
+            } else {
+                updateSidebar();
+            }
+
+            console.log("Chat deleted successfully.");
+
+        } catch (error) {
+
+            console.error("Chat deletion failed:", error);
+
+            alert("Chat delete nahi hui. Please try again.");
+        }
+    }
+
+
+    // =================================
+    // 13. NEW CHAT
     // =================================
 
     function newChat() {
-    stopSpeaking();
 
-    const chat = createChat();
+        stopSpeaking();
 
-    if (window.innerWidth <= 768) {
-        sidebar.classList.remove("active");
-        app.classList.remove("sidebar-open");
+        createChat();
+
+        // Close mobile sidebar correctly
+        if (window.innerWidth <= 650) {
+            sidebar.classList.remove("mobile-open");
+        }
+
+        homeCenter.style.display = "none";
+
+        messageContainer.style.display = "flex";
+
+        messageContainer.replaceChildren();
+
+        renderChat();
+
+        updateSidebar();
+
+        input.value = "";
+
+        input.focus();
     }
 
-    homeCenter.style.display = "none";
-    messageContainer.style.display = "flex";
-    messageContainer.replaceChildren();
-
-    renderChat();
-    updateSidebar();
-
-    input.value = "";
-    input.focus();
-    }
-
-    function createChat() {
-    const chat = {
-        id: crypto.randomUUID(),
-        title: "New Chat",
-        messages: [],
-        category: activeCategory,
-        updated: Date.now()
-    };
-
-    chats.unshift(chat);
-    activeChatId = chat.id;
-
-    saveData();
-    updateSidebar();
-
-    return chat;
-    }
 
     // =================================
-    // 11. SEND MESSAGE
+    // 14. SEND MESSAGE
     // =================================
 
     async function sendMessage() {
+
         const message = input.value.trim();
 
         if (!message || isSending) return;
@@ -488,12 +535,15 @@ async function deleteChat(id) {
         sendButton.disabled = true;
 
         renderChat();
+
         updateSidebar();
+
         saveData();
 
         showLoading();
 
         try {
+
             const history = chat.messages.slice(0, -1);
 
             const reply = await sendToAI(
@@ -509,14 +559,19 @@ async function deleteChat(id) {
                 role: "assistant",
                 content: String(reply)
             });
+
             speakAI(reply);
+
             chat.updated = Date.now();
 
             saveData();
+
             renderChat();
+
             updateSidebar();
 
         } catch (error) {
+
             document.querySelector("#aiLoading")?.remove();
 
             console.error("AI ERROR:", error);
@@ -530,48 +585,65 @@ async function deleteChat(id) {
             chat.updated = Date.now();
 
             saveData();
+
             renderChat();
 
         } finally {
+
             isSending = false;
+
             sendButton.disabled = false;
+
             input.focus();
         }
     }
 
+
     // =================================
-    // 12. SEND BUTTON
+    // 15. SEND BUTTON
     // =================================
 
     sendButton.addEventListener("click", sendMessage);
 
     input.addEventListener("keydown", event => {
+
         if (event.key === "Enter") {
             event.preventDefault();
             sendMessage();
         }
+
     });
 
+
     // =================================
-    // 13. NEW CHAT BUTTON
+    // 16. NEW CHAT BUTTON
     // =================================
 
     newChatButton.removeAttribute("onclick");
 
     newChatButton.addEventListener("click", event => {
+
         event.preventDefault();
+
         newChat();
+
     });
 
+
     // =================================
-    // 14. SIDEBAR TOGGLE
+    // 17. SIDEBAR TOGGLE
     // =================================
 
     sidebarToggle.addEventListener("click", () => {
+
         if (window.innerWidth <= 650) {
+
             sidebar.classList.toggle("mobile-open");
+
         } else {
+
             app.classList.toggle("sidebar-collapsed");
+
         }
 
         sidebarToggle.setAttribute(
@@ -581,10 +653,12 @@ async function deleteChat(id) {
                 ? "true"
                 : "false"
         );
+
     });
 
+
     // =================================
-    // 15. MEMORY BUTTON
+    // 18. MEMORY BUTTON
     // =================================
 
     const memoryButton = document.createElement("button");
@@ -609,70 +683,85 @@ async function deleteChat(id) {
         memoryButton,
         topbarRight.firstChild
     );
-// =================================
-// VOICE CONTROLS
-// =================================
 
-const micButton = document.createElement("button");
 
-micButton.type = "button";
-micButton.className = "mic-button";
-micButton.setAttribute("aria-label", "Start voice recording");
-
-micButton.innerHTML = `
-    <svg viewBox="0 0 24 24" fill="none"
-         xmlns="http://www.w3.org/2000/svg">
-        <rect x="9" y="2.5" width="6" height="12"
-              rx="3" stroke="currentColor" stroke-width="1.8"/>
-        <path d="M5.5 11.5V12a6.5 6.5 0 0 0 13 0v-.5"
-              stroke="currentColor" stroke-width="1.8"
-              stroke-linecap="round"/>
-        <path d="M12 18.5V22M9 22h6"
-              stroke="currentColor" stroke-width="1.8"
-              stroke-linecap="round"/>
-    </svg>
-`;
-
-// Voice Output Toggle
-
-const voiceToggle = document.createElement("button");
-// Add microphone to chat input
-chatBox.insertBefore(micButton, sendButton);
-
-// Activate voice recording
-setupVoiceInput(input, micButton);
-    
-voiceToggle.type = "button";
-voiceToggle.textContent = "🔇 Voice OFF";
-
-voiceToggle.style.cssText = `
-    padding:10px 12px;
-    margin-right:5px;
-    border:1px solid #ff3fa4;
-    border-radius:10px;
-    background:#19121c;
-    color:#ff80c5;
-    cursor:pointer;
-    font-size:12px;
-`;
-
-topbarRight.insertBefore(voiceToggle, memoryButton);
-
-voiceToggle.addEventListener("click", () => {
-    const enabled = !isVoiceOutputEnabled();
-
-    setVoiceOutput(enabled);
-
-    voiceToggle.textContent = enabled
-        ? "🔊 Voice ON"
-        : "🔇 Voice OFF";
-});
-    
     // =================================
-    // 16. MEMORY MANAGER
+    // 19. VOICE CONTROLS
+    // =================================
+
+    const micButton = document.createElement("button");
+
+    micButton.type = "button";
+    micButton.className = "mic-button";
+
+    micButton.setAttribute(
+        "aria-label",
+        "Start voice recording"
+    );
+
+    micButton.innerHTML = `
+        <svg viewBox="0 0 24 24" fill="none"
+             xmlns="http://www.w3.org/2000/svg">
+
+            <rect x="9" y="2.5" width="6" height="12"
+                  rx="3" stroke="currentColor" stroke-width="1.8"/>
+
+            <path d="M5.5 11.5V12a6.5 6.5 0 0 0 13 0v-.5"
+                  stroke="currentColor" stroke-width="1.8"
+                  stroke-linecap="round"/>
+
+            <path d="M12 18.5V22M9 22h6"
+                  stroke="currentColor" stroke-width="1.8"
+                  stroke-linecap="round"/>
+
+        </svg>
+    `;
+
+    chatBox.insertBefore(micButton, sendButton);
+
+    setupVoiceInput(input, micButton);
+
+
+    // Voice Output Toggle
+
+    const voiceToggle = document.createElement("button");
+
+    voiceToggle.type = "button";
+
+    voiceToggle.textContent = "🔇 Voice OFF";
+
+    voiceToggle.style.cssText = `
+        padding:10px 12px;
+        margin-right:5px;
+        border:1px solid #ff3fa4;
+        border-radius:10px;
+        background:#19121c;
+        color:#ff80c5;
+        cursor:pointer;
+        font-size:12px;
+    `;
+
+    topbarRight.insertBefore(voiceToggle, memoryButton);
+
+    voiceToggle.addEventListener("click", () => {
+
+        const enabled = !isVoiceOutputEnabled();
+
+        setVoiceOutput(enabled);
+
+        voiceToggle.textContent = enabled
+            ? "🔊 Voice ON"
+            : "🔇 Voice OFF";
+
+    });
+
+
+    // =================================
+    // 20. MEMORY MANAGER
     // =================================
 
     function openMemoryManager() {
+
         const overlay = document.createElement("div");
 
         overlay.style.cssText = `
@@ -713,7 +802,9 @@ voiceToggle.addEventListener("click", () => {
 
         box.appendChild(heading);
 
+
         function styleButton(button) {
+
             button.type = "button";
 
             button.style.cssText = `
@@ -730,27 +821,35 @@ voiceToggle.addEventListener("click", () => {
             `;
         }
 
+
         function refresh() {
+
             overlay.remove();
+
             openMemoryManager();
         }
+
 
         // ADD MEMORY
 
         const addButton = document.createElement("button");
 
         addButton.textContent = "+ Add Memory";
+
         styleButton(addButton);
 
         addButton.onclick = () => {
+
             const value = prompt("Enter your memory:");
 
             if (value === null) return;
 
             if (!addMemory(value)) {
+
                 alert(
                     "Memory could not be saved. Check that it isn't empty and that the 12-memory limit hasn't been reached."
                 );
+
                 return;
             }
 
@@ -758,6 +857,7 @@ voiceToggle.addEventListener("click", () => {
         };
 
         box.appendChild(addButton);
+
 
         // SAVED MEMORIES
 
@@ -775,7 +875,9 @@ voiceToggle.addEventListener("click", () => {
 
         box.appendChild(listHeading);
 
+
         if (memories.length === 0) {
+
             const empty = document.createElement("p");
 
             empty.textContent = "No memories saved yet.";
@@ -789,7 +891,9 @@ voiceToggle.addEventListener("click", () => {
             box.appendChild(empty);
         }
 
+
         memories.forEach((memory, index) => {
+
             const row = document.createElement("div");
 
             row.style.cssText = `
@@ -808,48 +912,67 @@ voiceToggle.addEventListener("click", () => {
                 overflow-wrap:anywhere;
             `;
 
+
+            // EDIT
+
             const edit = document.createElement("button");
 
             edit.textContent = "Edit";
+
             styleButton(edit);
 
             edit.onclick = () => {
+
                 const value = prompt("Edit memory:", memory);
 
                 if (value === null) return;
 
                 if (!editMemory(index, value)) {
+
                     alert("Memory could not be updated.");
+
                     return;
                 }
 
                 refresh();
             };
 
+
+            // DELETE
+
             const remove = document.createElement("button");
 
             remove.textContent = "Delete";
+
             styleButton(remove);
 
             remove.onclick = () => {
+
                 if (!confirm("Delete this memory?")) return;
 
                 deleteMemory(index);
+
                 refresh();
             };
 
+
             row.append(text, edit, remove);
+
             box.appendChild(row);
+
         });
+
 
         // USER NICKNAME
 
         const nicknameButton = document.createElement("button");
 
         nicknameButton.textContent = "♡ Save My Nickname";
+
         styleButton(nicknameButton);
 
         nicknameButton.onclick = () => {
+
             const value = prompt(
                 "What nickname should AI use for you?"
             );
@@ -869,21 +992,28 @@ voiceToggle.addEventListener("click", () => {
                 : addMemory(memory);
 
             if (!success) {
-                alert("Could not save nickname. Memory limit may be reached.");
+
+                alert(
+                    "Could not save nickname. Memory limit may be reached."
+                );
+
                 return;
             }
 
             refresh();
         };
 
+
         // AI NICKNAME
 
         const aiNicknameButton = document.createElement("button");
 
         aiNicknameButton.textContent = "♡ Save AI Nickname";
+
         styleButton(aiNicknameButton);
 
         aiNicknameButton.onclick = () => {
+
             const value = prompt(
                 "What nickname should you use for AI?"
             );
@@ -903,20 +1033,28 @@ voiceToggle.addEventListener("click", () => {
                 : addMemory(memory);
 
             if (!success) {
-                alert("Could not save nickname. Memory limit may be reached.");
+
+                alert(
+                    "Could not save nickname. Memory limit may be reached."
+                );
+
                 return;
             }
 
             refresh();
         };
-// CLOSE
+
+
+        // CLOSE
 
         const closeButton = document.createElement("button");
 
         closeButton.textContent = "Close";
+
         styleButton(closeButton);
 
         closeButton.onclick = () => overlay.remove();
+
 
         box.append(
             nicknameButton,
@@ -926,28 +1064,37 @@ voiceToggle.addEventListener("click", () => {
 
         overlay.appendChild(box);
 
+
         overlay.addEventListener("click", event => {
+
             if (event.target === overlay) {
                 overlay.remove();
             }
+
         });
 
         document.body.appendChild(overlay);
     }
+
 
     memoryButton.addEventListener(
         "click",
         openMemoryManager
     );
 
+
     // =================================
-    // 17. STARTUP
+    // 21. STARTUP
     // =================================
+
+    activeChatId = null;
+
+    homeCenter.style.display = "";
+
+    messageContainer.style.display = "none";
 
     updateSidebar();
-    newChat();
+
+    console.log("AS INFINITY AI is ready.");
 
 });
-
-
-        
