@@ -205,12 +205,11 @@ function saveData() {
     // =================================
 
     function updateSidebar() {
-
-        renderSidebarHistory(
-            chats,
-            activeChatId,
-            openChat
-        );
+    renderSidebarHistory(
+        chats.filter(chat => chat.category === activeCategory),
+        activeChatId,
+        openChat
+    );
     }
 
     // =================================
