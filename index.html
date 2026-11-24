@@ -26,76 +26,48 @@
     <!-- SIDEBAR -->
     <aside class="sidebar" id="sidebar">
 
-        <div class="brand">
-            <div class="logo">∞</div>
+        <aside class="sidebar" id="sidebar"><div class="brand">
+    <div class="logo">∞</div>
 
-            <div class="brand-text">
-                <h2>AS INFINITY AI</h2>
-                <p>Intelligence Without Limits.</p>
-            </div>
+    <div class="brand-text">
+        <h2>AS INFINITY AI</h2>
+        <p>Intelligence Without Limits.</p>
+    </div>
+</div>
+
+<button class="new-chat-btn" type="button" onclick="document.querySelector('.chat-box button')?.click()">
+    <span>＋</span>
+    <span>New Chat</span>
+</button>
+
+<nav class="sidebar-nav">
+
+    <a href="#" title="Settings">
+        <span class="nav-icon">⚙</span>
+        <span class="nav-text">Settings</span>
+    </a>
+
+</nav>
+
+<div class="chat-history-sidebar">
+    <div class="sidebar-label">RECENT CHATS</div>
+    <div id="sidebarChatHistory"></div>
+</div>
+
+<div class="sidebar-bottom">
+    <div class="profile">
+        <div class="avatar">S</div>
+
+        <div class="profile-info">
+            <h4>Welcome User</h4>
+            <p>Personal Account</p>
         </div>
 
-        <button class="new-chat-btn" type="button" onclick="document.querySelector('.chat-box button')?.click()">
-            <span>＋</span>
-            <span>New Chat</span>
-        </button>
+        <span class="profile-menu">•••</span>
+    </div>
+</div>
 
-        <div class="sidebar-label">WORKSPACE</div>
-
-        <nav class="sidebar-nav">
-
-            <a href="#" class="active" title="Home">
-                <span class="nav-icon">⌂</span>
-                <span class="nav-text">Home</span>
-            </a>
-
-            <a href="#" title="AI Chat">
-                <span class="nav-icon">◉</span>
-                <span class="nav-text">AI Chat</span>
-            </a>
-
-            <a href="#" title="Master Guide">
-                <span class="nav-icon">▣</span>
-                <span class="nav-text">Master Guide</span>
-            </a>
-
-            <a href="#" title="Coding Assistant">
-                <span class="nav-icon">⌘</span>
-                <span class="nav-text">Coding Assistant</span>
-            </a>
-
-            <a href="#" title="Voice Assistant">
-                <span class="nav-icon">♫</span>
-                <span class="nav-text">Voice Assistant</span>
-            </a>
-
-            <div class="sidebar-divider"></div>
-
-            <a href="#" title="Settings">
-                <span class="nav-icon">⚙</span>
-                <span class="nav-text">Settings</span>
-            </a>
-
-        </nav>
-
-        <div class="chat-history-sidebar">
-            <div class="sidebar-label">RECENT CHATS</div>
-            <div id="sidebarChatHistory"></div>
-        </div>
-
-        <div class="sidebar-bottom">
-            <div class="profile">
-                <div class="avatar">S</div>
-
-                <div class="profile-info">
-                    <h4>Welcome User</h4>
-                    <p>Personal Account</p>
-                </div>
-
-                <span class="profile-menu">•••</span>
-            </div>
-        </div>
-
+        </aside>
     </aside>
 
     <!-- MAIN CONTENT -->
