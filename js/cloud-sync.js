@@ -252,3 +252,25 @@ export async function syncMemoriesToCloud(localMemories) {
 
     return true;
 }
+// =====================================
+// 6. DELETE CHAT FROM CLOUD
+// =====================================
+
+export async function deleteChatFromCloud(chatId) {
+    const user = await getCurrentUser();
+
+    if (!user) {
+        throw new Error("Please login first.");
+    }
+
+    const { error } = await supabase
+        .from("chats")
+        .delete()
+        .eq("id", chatId)
+        .eq("user_id", user.id);
+
+    if (error) throw error;
+
+    return true;
+}
+
