@@ -1,4 +1,11 @@
 import {
+    setupVoiceInput,
+    setVoiceOutput,
+    isVoiceOutputEnabled,
+    speakAI,
+    stopSpeaking
+} from "./voice.js";
+import {
     syncAll,
     syncChatsOnly
 } from "./cloud-sync.js";
