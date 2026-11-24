@@ -1,4 +1,8 @@
-import { syncAll } from "./cloud-sync.js";
+import {
+    syncAll,
+    syncChatsOnly
+} from "./cloud-sync.js";
+
 import { loadChats, saveChats } from "./storage.js";
 
 import {
