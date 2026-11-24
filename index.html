@@ -201,11 +201,16 @@
 <script type="module">
 import { getCurrentUser } from "./js/auth.js";
 
+const category = new URLSearchParams(window.location.search).get("category");
+const allowedCategories = ["medical", "study", "friend"];
+
 try {
     const user = await getCurrentUser();
 
     if (!user) {
         window.location.replace("auth.html");
+    } else if (!allowedCategories.includes(category)) {
+        window.location.replace("dashboard.html");
     }
 } catch (error) {
     window.location.replace("auth.html");
