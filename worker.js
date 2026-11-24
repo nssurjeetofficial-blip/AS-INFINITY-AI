@@ -94,6 +94,19 @@ PERSONALITY:
 Your goal is to make conversations helpful, comfortable and respectful.
 `
 };
+function audioToBase64(bytes) {
+  let binary = "";
+
+  const chunkSize = 0x8000;
+
+  for (let i = 0; i < bytes.length; i += chunkSize) {
+    binary += String.fromCharCode(
+      ...bytes.subarray(i, i + chunkSize)
+    );
+  }
+
+  return btoa(binary);
+}
 
 export default {
   async fetch(request, env) {
