@@ -6,10 +6,6 @@ let recognition = null;
 let isListening = false;
 let voiceOutputEnabled = false;
 
-// ======================================
-// BROWSER SUPPORT
-// ======================================
-
 export function isVoiceSupported() {
     return (
         "speechSynthesis" in window &&
@@ -32,7 +28,7 @@ export function setupVoiceInput(input, micButton) {
 
     if (!SpeechRecognition) {
         micButton.disabled = true;
-        micButton.textContent = "Mic unavailable";
+        micButton.textContent = "Mic unsupported";
         return;
     }
 
@@ -52,18 +48,39 @@ export function setupVoiceInput(input, micButton) {
             event.results[0][0].transcript;
 
         input.value = transcript;
+
         input.dispatchEvent(
             new Event("input", { bubbles: true })
         );
+
+        micButton.textContent = "✅ Done";
     };
 
     recognition.onerror = event => {
-        console.error("Voice Input Error:", event.error);
+        isListening = false;
+
+        const errors = {
+            "not-allowed": "Allow Mic Permission",
+            "audio-capture": "Mic Not Found",
+            "no-speech": "No Voice Detected",
+            "network": "Network Error",
+            "service-not-allowed": "Mic Service Blocked"
+        };
+
+        micButton.textContent =
+            errors[event.error] || "Mic Error";
+
+        console.error("Voice Error:", event.error);
     };
 
     recognition.onend = () => {
         isListening = false;
-        micButton.textContent = "🎤 Speak";
+
+        if (
+            micButton.textContent === "🔴 Listening..."
+        ) {
+            micButton.textContent = "🎤 Speak";
+        }
     };
 
     micButton.addEventListener("click", () => {
@@ -73,17 +90,19 @@ export function setupVoiceInput(input, micButton) {
             return;
         }
 
+        micButton.textContent = "Starting...";
+
         try {
             recognition.start();
         } catch (error) {
-            console.error("Microphone Error:", error);
+            micButton.textContent = "Try Again";
+            console.error(error);
         }
-
     });
 }
 
 // ======================================
-// VOICE OUTPUT CONTROL
+// VOICE OUTPUT
 // ======================================
 
 export function setVoiceOutput(enabled) {
@@ -98,18 +117,11 @@ export function isVoiceOutputEnabled() {
     return voiceOutputEnabled;
 }
 
-// ======================================
-// AI SPEAKING ENGINE
-// ======================================
-
 export function speakAI(text) {
 
     if (!voiceOutputEnabled || !text) return;
 
-    if (!("speechSynthesis" in window)) {
-        console.error("Speech output is unavailable.");
-        return;
-    }
+    if (!("speechSynthesis" in window)) return;
 
     window.speechSynthesis.cancel();
 
@@ -124,10 +136,6 @@ export function speakAI(text) {
 
     window.speechSynthesis.speak(speech);
 }
-
-// ======================================
-// STOP SPEAKING
-// ======================================
 
 export function stopSpeaking() {
     if ("speechSynthesis" in window) {
