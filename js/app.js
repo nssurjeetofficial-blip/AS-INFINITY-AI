@@ -229,6 +229,11 @@ function saveData() {
 
     function openChat(id) {
 
+
+        const selectedChat = chats.find(chat => chat.id === id);
+
+if (!selectedChat || selectedChat.category !== activeCategory) return;
+        
     const chat = chats.find(item => item.id === id);
 
     if (!chat) return;
